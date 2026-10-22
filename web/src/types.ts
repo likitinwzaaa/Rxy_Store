@@ -59,6 +59,15 @@ export type Discount = {
   value: number
 }
 
+export type DiscountCode = Discount & {
+  limit: number | null
+  perPlayer: boolean
+  used: number
+  startsAt?: number | null
+  endsAt?: number | null
+  enabled?: boolean
+}
+
 export type OrderLine = {
   id: string
   name: string
@@ -134,3 +143,32 @@ export type AdminOrder = Order & {
 }
 
 export type AdminPage = 'products' | 'categories' | 'orders' | 'banners' | 'settings'
+
+export type GatewayId = 'opn' | 'beam'
+
+export type LogKind = 'paid' | 'fail' | 'admin' | 'daily' | 'refund' | 'big' | 'expire' | 'stock' | 'code' | 'expired'
+
+export type ShopSettings = {
+  name: string
+  openKey: string
+  theme: { primary: string; secondary: string | null }
+  gateway: GatewayId
+  qrMinutes: number
+  minAmount: number
+  logs: Record<LogKind, boolean>
+  dailyAt: string
+  bigOver: number
+  debug: boolean
+}
+
+export type ServerStatus = {
+  keys: Record<GatewayId, string | null>
+  webhook: string | null
+}
+
+export type UpdateInfo = {
+  current: string
+  latest: string
+  security: boolean
+  notes: string[]
+}

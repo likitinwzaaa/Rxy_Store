@@ -1,4 +1,15 @@
-import type { Banner, CartLine, Category, Delivery, Discount, InboxItem, Order, Owned, Product } from '../types'
+import type {
+  Banner,
+  CartLine,
+  Category,
+  Delivery,
+  Discount,
+  DiscountCode,
+  InboxItem,
+  Order,
+  Owned,
+  Product,
+} from '../types'
 import { cartTotals } from '../lib/cart'
 
 const day = 24 * 60 * 60 * 1000
@@ -171,17 +182,22 @@ export const products: Product[] = [
 
 export const characterName = 'Somchai Jaidee'
 
-const codes: Record<string, Discount & { startsAt?: number }> = {
-  RXY10: { code: 'RXY10', kind: 'percent', value: 10 },
-  NEWBIE: { code: 'NEWBIE', kind: 'fixed', value: 20 },
-  HALLOWEEN: { code: 'HALLOWEEN', kind: 'percent', value: 25, startsAt: now + 9 * day },
-}
+export const discountCodes: DiscountCode[] = [
+  { code: 'RXY10', kind: 'percent', value: 10, limit: null, perPlayer: false, used: 37, endsAt: now + 9 * day },
+  { code: 'NEWBIE', kind: 'fixed', value: 20, limit: null, perPlayer: true, used: 112 },
+  { code: 'HALLOWEEN', kind: 'percent', value: 25, limit: 100, perPlayer: false, used: 0, startsAt: now + 9 * day },
+]
 
 // ตรวจโค้ดส่วนลด
-export function checkCode(input: string): { ok: true; discount: Discount } | { ok: false; error: string } {
-  const c = codes[input.trim().toUpperCase()]
-  if (!c) return { ok: false, error: 'ไม่มีโค้ดนี้' }
+export function checkCode(
+  input: string,
+  list: DiscountCode[] = discountCodes,
+): { ok: true; discount: Discount } | { ok: false; error: string } {
+  const c = list.find((x) => x.code === input.trim().toUpperCase())
+  if (!c || c.enabled === false) return { ok: false, error: 'ไม่มีโค้ดนี้' }
   if (c.startsAt && c.startsAt > Date.now()) return { ok: false, error: 'โค้ดนี้ยังใช้ไม่ได้' }
+  if (c.endsAt && c.endsAt <= Date.now()) return { ok: false, error: 'โค้ดนี้หมดอายุแล้ว' }
+  if (c.limit !== null && c.used >= c.limit) return { ok: false, error: 'โค้ดนี้ถูกใช้ครบแล้ว' }
   return { ok: true, discount: { code: c.code, kind: c.kind, value: c.value } }
 }
 

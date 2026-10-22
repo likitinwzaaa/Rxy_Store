@@ -1,5 +1,17 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { Banner, CartLine, Category, Discount, InboxItem, Notice, Order, Page, Product } from './types'
+import type {
+  Banner,
+  CartLine,
+  Category,
+  Discount,
+  DiscountCode,
+  InboxItem,
+  Notice,
+  Order,
+  Page,
+  Product,
+  ShopSettings,
+} from './types'
 import { useNuiEvent } from './hooks/useNuiEvent'
 import { fetchNui, isBrowser } from './lib/nui'
 import { applyTheme, type Theme } from './lib/theme'
@@ -12,6 +24,7 @@ import {
   checkCode,
   createOrder,
   deliver,
+  discountCodes,
   findPlayer,
   groups,
   inbox,
@@ -28,6 +41,7 @@ import { History } from './pages/History'
 import { Inbox } from './pages/Inbox'
 import { GameToast } from './components/GameToast'
 import { AdminApp } from './admin/AdminApp'
+import { shopSettings } from './mock/admin'
 import { Toast, type ToastData } from './components/Toast'
 import { ProductModal } from './components/ProductModal'
 import { OrderModal } from './components/OrderModal'
@@ -37,11 +51,13 @@ if (isBrowser) applyTheme({ primary: '#FF7A1A' })
 // หน้าหลักของร้าน
 export default function App() {
   const [visible, setVisible] = useState(isBrowser)
-  const [admin, setAdmin] = useState(isBrowser && location.hash === '#admin')
+  const [admin, setAdmin] = useState(isBrowser && location.hash.startsWith('#admin'))
   const [catalog, setCatalog] = useState<Product[]>(products)
   const [cats, setCats] = useState<Category[]>(categories)
   const [bannerList, setBannerList] = useState<Banner[]>(banners)
   const [bannerSeconds, setBannerSeconds] = useState(5)
+  const [settings, setSettings] = useState<ShopSettings>(shopSettings)
+  const [codes, setCodes] = useState<DiscountCode[]>(discountCodes)
   const [page, setPage] = useState<Page>('home')
   const [cart, setCart] = useState<CartLine[]>([])
   const [discount, setDiscount] = useState<Discount | null>(null)
@@ -93,6 +109,12 @@ export default function App() {
     fetchNui('close')
   }
 
+  // บันทึกตั้งค่าร้านแล้วเปลี่ยนสีตาม
+  function saveSettings(next: ShopSettings) {
+    setSettings(next)
+    applyTheme(next.theme)
+  }
+
   // เปลี่ยนหน้า
   function go(next: Page) {
     setDetail(null)
@@ -136,7 +158,7 @@ export default function App() {
 
   // ใช้โค้ดส่วนลด คืนข้อความ error ถ้าใช้ไม่ได้
   function applyCode(code: string) {
-    const res = checkCode(code)
+    const res = checkCode(code, codes)
     if (!res.ok) return res.error
     setDiscount(res.discount)
     return null
@@ -252,14 +274,17 @@ export default function App() {
   }
 
   if (!visible) {
-    return notice ? <GameToast notice={notice} shopName="RXY STORE" openKey="F5" onDone={hideNotice} /> : null
+    return notice ? <GameToast notice={notice} shopName={settings.name} openKey={settings.openKey} onDone={hideNotice} /> : null
   }
 
   if (admin) {
     return (
       <div className="shop">
         <AdminApp
-          shopName="RXY STORE"
+          settings={settings}
+          codes={codes}
+          onSettings={saveSettings}
+          onCodes={setCodes}
           products={catalog}
           categories={cats}
           groups={groups}
@@ -297,7 +322,7 @@ export default function App() {
     <div className="shop">
       {page === 'home' && (
         <Home
-          shopName="RXY STORE"
+          shopName={settings.name}
           products={onSale}
           categories={shownCats}
           banners={bannerList.filter((b) => bannerState(b) === 'live')}
@@ -333,7 +358,7 @@ export default function App() {
 
       {page === 'payment' && order && (
         <Payment
-          shopName="RXY STORE"
+          shopName={settings.name}
           order={order}
           characterName={characterName}
           dev={isBrowser}

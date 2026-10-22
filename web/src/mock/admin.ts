@@ -1,10 +1,46 @@
-import type { AdminOrder } from '../types'
+import type { AdminOrder, ServerStatus, ShopSettings, UpdateInfo } from '../types'
 
 const min = 60 * 1000
 const day = 24 * 60 * min
 const today = new Date()
 today.setHours(0, 0, 0, 0)
 const t = (h: number, m: number, back = 0) => today.getTime() - back * day + (h * 60 + m) * min
+
+export const shopSettings: ShopSettings = {
+  name: 'RXY STORE',
+  openKey: 'F5',
+  theme: { primary: '#FF7A1A', secondary: null },
+  gateway: 'opn',
+  qrMinutes: 15,
+  minAmount: 20,
+  logs: {
+    paid: true,
+    fail: true,
+    admin: true,
+    daily: true,
+    refund: true,
+    big: true,
+    expire: true,
+    stock: true,
+    code: false,
+    expired: false,
+  },
+  dailyAt: '23:59',
+  bigOver: 2000,
+  debug: false,
+}
+
+export const serverStatus: ServerStatus = {
+  keys: { opn: 'skey_live_••••4f2a', beam: null },
+  webhook: 'shop-log',
+}
+
+export const updateInfo: UpdateInfo = {
+  current: '0.2.0',
+  latest: '0.3.0',
+  security: location.hash.includes('security'),
+  notes: ['เพิ่มหน้าตั้งค่าร้านในเกม', 'แก้ QR ไม่รีเฟรชตอนหมดเวลา', 'แบนเนอร์ตั้งเวลาได้'],
+}
 
 // คำสั่งซื้อทั้งเซิร์ฟสำหรับหน้าแอดมิน
 export const adminOrders: AdminOrder[] = [
