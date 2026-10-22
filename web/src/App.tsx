@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useNuiEvent } from './hooks/useNuiEvent'
 import { fetchNui, isBrowser } from './lib/nui'
+import { applyTheme, type Theme } from './lib/theme'
+import { IconButton } from './components/Button'
+
+if (isBrowser) applyTheme({ primary: '#FF7A1A' })
 
 // หน้าหลักของร้าน
 export default function App() {
   const [visible, setVisible] = useState(isBrowser)
 
   useNuiEvent<boolean>('setVisible', setVisible)
+  useNuiEvent<Theme>('setTheme', applyTheme)
 
   useEffect(() => {
     if (!visible) return
@@ -29,11 +34,9 @@ export default function App() {
     <div className="shop">
       <header className="shop-head">
         <span className="shop-name">RXY STORE</span>
-        <button className="icon-btn" onClick={close} aria-label="ปิดร้าน">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M6 6l12 12M18 6 6 18" />
-          </svg>
-        </button>
+        <IconButton icon="gift" label="กล่องรับของ" />
+        <IconButton icon="cart" label="ตะกร้า" />
+        <IconButton icon="close" label="ปิดร้าน" onClick={close} />
       </header>
       <main className="shop-body" />
     </div>

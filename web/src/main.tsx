@@ -2,9 +2,17 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import { isBrowser } from './lib/nui'
-import './index.css'
+import { lockdown } from './lib/csp'
 
-if (isBrowser) document.body.classList.add('browser')
+import './styles/fonts.css'
+import './styles/base.css'
+import './styles/ui.css'
+
+if (isBrowser) {
+  document.body.classList.add('browser')
+} else {
+  lockdown()
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

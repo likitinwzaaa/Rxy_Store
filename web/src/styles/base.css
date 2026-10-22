@@ -1,12 +1,22 @@
 :root {
   --bg: #0c0c0d;
   --panel: #121214;
+  --panel-2: #151517;
+  --hover: #1c1c1f;
   --line: #222225;
   --line-2: #2a2a2e;
   --text: #f4f4f5;
+  --text-2: #b4b4bc;
   --muted: #9a9aa3;
+  --danger: #ff5a5a;
+
   --accent: #ff7a1a;
   --accent-2: #4c8dff;
+
+  --font: 'IBM Plex Sans Thai', sans-serif;
+  --mono: 'IBM Plex Mono', 'IBM Plex Sans Thai', monospace;
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 * {
@@ -18,9 +28,11 @@ body {
   margin: 0;
   height: 100%;
   background: transparent;
-  font-family: 'IBM Plex Sans Thai', sans-serif;
+  font-family: var(--font);
+  font-size: 14px;
   color: var(--text);
   user-select: none;
+  -webkit-font-smoothing: antialiased;
 }
 
 body.browser {
@@ -34,9 +46,21 @@ body.browser {
   justify-content: center;
 }
 
-button {
+button,
+input,
+select,
+textarea {
   font: inherit;
   color: inherit;
+}
+
+input,
+textarea {
+  user-select: text;
+}
+
+.mono {
+  font-family: var(--mono);
 }
 
 .shop {
@@ -48,6 +72,18 @@ button {
   border: 1px solid var(--line-2);
   border-radius: 6px;
   overflow: hidden;
+  animation: shop-in 0.25s var(--ease) both;
+}
+
+@keyframes shop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .shop-head {
@@ -55,11 +91,13 @@ button {
   flex: none;
   display: flex;
   align-items: center;
+  gap: 8px;
   padding: 0 16px 0 24px;
   border-bottom: 1px solid var(--line);
 }
 
 .shop-name {
+  margin-right: auto;
   font-size: 18px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -68,24 +106,4 @@ button {
 .shop-body {
   flex: 1;
   min-height: 0;
-}
-
-.icon-btn {
-  margin-left: auto;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  color: var(--muted);
-  border: 0;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.icon-btn:hover {
-  background: #1c1c1f;
-  color: #fff;
 }

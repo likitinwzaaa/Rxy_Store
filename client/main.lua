@@ -1,9 +1,15 @@
 local isOpen = false
+local themeSent = false
 
 -- เปิด/ปิดหน้าร้าน
 local function setOpen(state)
     if isOpen == state then return end
     isOpen = state
+
+    if state and not themeSent then
+        SendNUIMessage({ action = 'setTheme', data = Config.Theme })
+        themeSent = true
+    end
 
     SetNuiFocus(state, state)
     SendNUIMessage({ action = 'setVisible', data = state })
