@@ -48,4 +48,36 @@ export type Discount = {
   value: number
 }
 
-export type Page = 'home' | 'cart'
+export type OrderLine = {
+  id: string
+  name: string
+  price: number
+  qty: number
+}
+
+export type Delivery = {
+  name: string
+  where: string
+  inbox: number
+}
+
+export type OrderStatus = 'pending' | 'paid' | 'expired'
+
+export type Order = {
+  id: string
+  lines: OrderLine[]
+  subtotal: number
+  off: number
+  total: number
+  code?: string | null
+  recipient?: string | null
+  qr?: string | null
+  createdAt: number
+  expiresAt: number
+  status: OrderStatus
+  ref?: string
+  paidAt?: number
+  delivery?: Delivery[]
+}
+
+export type Page = 'home' | 'cart' | 'payment'

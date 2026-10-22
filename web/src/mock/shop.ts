@@ -1,4 +1,5 @@
-import type { Banner, Category, Discount, Product } from '../types'
+import type { Banner, CartLine, Category, Delivery, Discount, Order, Product } from '../types'
+import { cartTotals } from '../lib/cart'
 
 const day = 24 * 60 * 60 * 1000
 const now = Date.now()
@@ -176,4 +177,61 @@ const online: Record<string, string> = { '5': 'Mint T.', '23': 'Ploy Wong', '112
 // หาชื่อผู้เล่นที่ออนไลน์จาก ID
 export function findPlayer(id: string) {
   return online[id.trim()] ?? null
+}
+
+const where: Record<string, string> = {
+  item: 'เข้ากระเป๋าแล้ว',
+  vehicle: 'เข้าการาจหลักแล้ว',
+  rank: 'ได้ยศแล้ว',
+  points: 'เข้าบัญชีพอยท์แล้ว',
+  money: 'เข้าบัญชีธนาคารแล้ว',
+  command: 'ส่งแล้ว',
+}
+
+let seq = 90
+
+// สร้างคำสั่งซื้อจำลอง
+export function createOrder(cart: CartLine[], list: Product[], discount: Discount | null, recipient: string | null): Order {
+  const d = new Date()
+  const ymd = String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0')
+  const { subtotal, off, total } = cartTotals(cart, list, discount)
+  seq += 1
+
+  return {
+    id: `RXY-${ymd}-${String(seq).padStart(4, '0')}`,
+    lines: cart.map((l) => {
+      const p = list.find((x) => x.id === l.id)!
+      return { id: p.id, name: p.name, price: p.price, qty: l.qty }
+    }),
+    subtotal,
+    off,
+    total,
+    code: discount?.code ?? null,
+    recipient,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + 10 * 60 * 1000,
+    status: 'pending',
+  }
+}
+
+// จำลองการส่งของหลังจ่ายเงิน ไอเทมที่ซื้อหลายชิ้นจะเข้ากล่องรับของ 1 ชิ้น เหมือนกระเป๋าเต็ม
+export function deliver(order: Order, list: Product[]): Delivery[] {
+  return order.lines.map((l) => {
+    const p = list.find((x) => x.id === l.id)
+    const kind = p?.rewards[0]?.kind ?? 'item'
+    const name = l.qty > 1 ? `${l.name} ×${l.qty}` : l.name
+
+    if (order.recipient) return { name, where: `ส่งเข้ากล่องรับของของ ${order.recipient} แล้ว`, inbox: 0 }
+
+    const days = p?.rewards.find((r) => r.days)?.days
+    if (days) {
+      const until = new Date(Date.now() + days * 24 * 60 * 60 * 1000)
+      return { name, where: 'หมดอายุ ' + until.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }), inbox: 0 }
+    }
+
+    if (kind === 'item' && l.qty > 1) {
+      return { name, where: `เข้ากระเป๋า ${l.qty - 1} ชุด · รอรับ 1 ชุด`, inbox: 1 }
+    }
+    return { name, where: where[kind], inbox: 0 }
+  })
 }

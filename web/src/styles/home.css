@@ -362,17 +362,6 @@
   gap: 12px;
 }
 
-@keyframes enter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 .card {
   display: flex;
   flex-direction: column;

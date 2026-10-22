@@ -106,3 +106,18 @@ textarea {
   font-weight: 700;
   letter-spacing: 0.04em;
 }
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.enter {
+  animation: enter 0.45s var(--ease) both;
+}
