@@ -8,6 +8,7 @@ import './styles/fonts.css'
 import './styles/base.css'
 import './styles/ui.css'
 import './styles/home.css'
+import './styles/modal.css'
 
 if (isBrowser) {
   document.body.classList.add('browser')

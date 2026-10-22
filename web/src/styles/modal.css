@@ -1,0 +1,294 @@
+.veil {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 8, 9, 0.72);
+  animation: fade 0.25s ease-out both;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  background: #0f0f11;
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  overflow: hidden;
+  animation: pop 0.3s var(--ease) 0.05s both;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pd {
+  width: 720px;
+  height: 500px;
+  display: flex;
+}
+
+.pd-left {
+  width: 320px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  border-right: 1px solid #1e1e21;
+}
+
+.pd-shot {
+  position: relative;
+  height: 230px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a1d;
+  border-radius: 10px;
+  overflow: hidden;
+  color: #6e6e77;
+  font-size: 12px;
+}
+
+.pd-shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pd-shot .tag {
+  top: 10px;
+  left: 10px;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 11px;
+  font-size: 12px;
+}
+
+.pd-timer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--panel-2);
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.pd-timer svg {
+  color: var(--accent);
+}
+
+.pd-timer b {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.pd-timer + .pd-timer {
+  margin-top: 0;
+}
+
+.pd-right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 20px;
+}
+
+.pd-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.pd-head > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.pd-cat {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pd-head h1 {
+  margin: 2px 0 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.pd-price {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.pd-price .now {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.pd-price .sale {
+  color: var(--accent);
+}
+
+.pd-price .old {
+  font-size: 14px;
+  color: #7c7c85;
+  text-decoration: line-through;
+}
+
+.pd-desc {
+  margin: 0;
+  max-height: 64px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-2);
+  white-space: pre-line;
+}
+
+.pd-rewards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.pd-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pd-reward {
+  height: 40px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  background: var(--panel-2);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.dot-2 {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent-2);
+}
+
+.pd-reward-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.pd-days {
+  height: 20px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--accent-2);
+  border-radius: 10px;
+  color: var(--accent-2);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.pd-where {
+  width: 84px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pd-limits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pd-limits b {
+  color: var(--text);
+}
+
+.pd-foot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid #1e1e21;
+}
+
+.stepper {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.stepper button {
+  width: 34px;
+  height: 40px;
+  background: transparent;
+  border: 0;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.stepper button:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.stepper button:disabled {
+  color: #5a5a62;
+  cursor: not-allowed;
+}
+
+.stepper span {
+  width: 30px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.stepper.off {
+  opacity: 0.45;
+}
+
+.pd-add {
+  flex: 1;
+}

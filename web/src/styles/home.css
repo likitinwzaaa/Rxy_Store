@@ -523,10 +523,6 @@
   white-space: nowrap;
 }
 
-.card.off {
-  cursor: default;
-}
-
 .card.off:hover {
   border-color: var(--line);
   transform: none;
@@ -548,7 +544,7 @@
   position: absolute;
   right: 20px;
   bottom: 20px;
-  z-index: 10;
+  z-index: 30;
   width: 300px;
   display: flex;
   align-items: center;
