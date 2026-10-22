@@ -9,7 +9,19 @@ export const categories: Category[] = [
   { id: 'vehicle', name: 'รถ', icon: 'car' },
   { id: 'vip', name: 'VIP', icon: 'crown' },
   { id: 'points', name: 'พอยท์', icon: 'coin' },
+  { id: 'vip_only', name: 'ของ VIP เท่านั้น', icon: 'gift', groups: ['vip_gold'] },
+  { id: 'halloween', name: 'อีเวนต์ฮาโลวีน', icon: 'fire', enabled: false },
 ]
+
+export const groups = [
+  { id: 'vip_gold', name: 'VIP Gold' },
+  { id: 'vip_silver', name: 'VIP Silver' },
+  { id: 'police', name: 'ตำรวจ' },
+  { id: 'ambulance', name: 'หมอ' },
+  { id: 'admin', name: 'แอดมิน' },
+]
+
+export const playerGroups: string[] = []
 
 export const banners: Banner[] = [
   { id: 'b1', label: 'โปรเปิดเซิร์ฟ รถลด 30%', productId: 'sultan_rs' },

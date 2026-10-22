@@ -31,6 +31,9 @@ export type Category = {
   id: string
   name: string
   icon: string
+  enabled?: boolean
+  groups?: string[] | null
+  hideEmpty?: boolean
 }
 
 export type Banner = {

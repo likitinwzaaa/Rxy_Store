@@ -467,3 +467,153 @@
   padding: 0 18px;
   border-radius: 10px;
 }
+
+.adm-hint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.crow {
+  display: grid;
+  grid-template-columns: 20px 28px minmax(0, 1fr) 56px 190px 44px;
+  gap: 12px;
+  align-items: center;
+  padding: 0 12px;
+}
+
+.crow-head {
+  padding-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.adm-rows .crow {
+  height: 48px;
+  flex: none;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  animation: enter 0.4s var(--ease) both;
+  transition: background-color 0.15s, border-color 0.15s, opacity 0.15s;
+}
+
+.adm-rows .crow:hover {
+  background: #161618;
+  border-color: #33333a;
+}
+
+.adm-rows .crow.on {
+  background: var(--hover);
+  border-color: #4a4a52;
+}
+
+.crow.dragging {
+  opacity: 0.4;
+}
+
+.crow-icon {
+  display: flex;
+  color: var(--text);
+}
+
+.crow-name {
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.crow.off .crow-icon,
+.crow.off .crow-name {
+  color: #6e6e77;
+}
+
+.crow-count {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.crow-who {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.crow-who svg {
+  flex: none;
+}
+
+.crow-who.locked {
+  color: var(--accent-2);
+}
+
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.icon-pick {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel-2);
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s, transform 0.15s var(--ease);
+}
+
+.icon-pick:hover {
+  border-color: #5a5a62;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.icon-pick.on {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}
+
+.seg {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 3px;
+  background: var(--panel-2);
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+}
+
+.seg button {
+  height: 30px;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.seg button.on {
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 700;
+}
+
+.chips.wrap {
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.drop-in {
+  animation: drop 0.25s ease-out both;
+}

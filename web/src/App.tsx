@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { CartLine, Discount, InboxItem, Notice, Order, Page, Product } from './types'
+import type { CartLine, Category, Discount, InboxItem, Notice, Order, Page, Product } from './types'
 import { useNuiEvent } from './hooks/useNuiEvent'
 import { fetchNui, isBrowser } from './lib/nui'
 import { applyTheme, type Theme } from './lib/theme'
@@ -12,9 +12,11 @@ import {
   createOrder,
   deliver,
   findPlayer,
+  groups,
   inbox,
   owned,
   pastOrders,
+  playerGroups,
   products,
   renewOrder,
 } from './mock/shop'
@@ -36,6 +38,7 @@ export default function App() {
   const [visible, setVisible] = useState(isBrowser)
   const [admin, setAdmin] = useState(isBrowser && location.hash === '#admin')
   const [catalog, setCatalog] = useState<Product[]>(products)
+  const [cats, setCats] = useState<Category[]>(categories)
   const [page, setPage] = useState<Page>('home')
   const [cart, setCart] = useState<CartLine[]>([])
   const [discount, setDiscount] = useState<Discount | null>(null)
@@ -255,8 +258,10 @@ export default function App() {
         <AdminApp
           shopName="RXY STORE"
           products={catalog}
-          categories={categories}
+          categories={cats}
+          groups={groups}
           onProducts={setCatalog}
+          onCategories={setCats}
           onToast={(title) => setToast({ key: Date.now(), title })}
           onClose={close}
         />
@@ -266,8 +271,19 @@ export default function App() {
   }
 
   const cartCount = cart.reduce((n, l) => n + l.qty, 0)
-  const onSale = catalog.filter((p) => p.enabled !== false && !(p.hideWhenBlocked && blockReason(p)))
-  const catName = (id: string) => categories.find((c) => c.id === id)?.name ?? ''
+  const shownCats = cats.filter((c) => {
+    if (c.enabled === false) return false
+    if (c.groups?.length && !c.groups.some((g) => playerGroups.includes(g))) return false
+    if (c.hideEmpty && !catalog.some((p) => p.category === c.id && p.enabled !== false && !blockReason(p))) return false
+    return true
+  })
+  const onSale = catalog.filter(
+    (p) =>
+      p.enabled !== false &&
+      !(p.hideWhenBlocked && blockReason(p)) &&
+      shownCats.some((c) => c.id === p.category),
+  )
+  const catName = (id: string) => cats.find((c) => c.id === id)?.name ?? ''
   const order = orders.find((o) => o.id === payId) ?? null
 
   return (
@@ -276,7 +292,7 @@ export default function App() {
         <Home
           shopName="RXY STORE"
           products={onSale}
-          categories={categories}
+          categories={shownCats}
           banners={banners}
           cartCount={cartCount}
           inboxCount={inboxItems.filter((x) => !x.claimedAt).length}
