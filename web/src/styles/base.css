@@ -64,6 +64,7 @@ textarea {
 }
 
 .shop {
+  position: relative;
   width: 1120px;
   height: 720px;
   display: flex;
@@ -87,6 +88,8 @@ textarea {
 }
 
 .shop-head {
+  position: relative;
+  z-index: 3;
   height: 60px;
   flex: none;
   display: flex;
@@ -97,13 +100,9 @@ textarea {
 }
 
 .shop-name {
-  margin-right: auto;
+  width: 176px;
+  flex: none;
   font-size: 18px;
   font-weight: 700;
   letter-spacing: 0.04em;
-}
-
-.shop-body {
-  flex: 1;
-  min-height: 0;
 }

@@ -7,6 +7,7 @@ import { lockdown } from './lib/csp'
 import './styles/fonts.css'
 import './styles/base.css'
 import './styles/ui.css'
+import './styles/home.css'
 
 if (isBrowser) {
   document.body.classList.add('browser')
