@@ -1,8 +1,10 @@
 import { useState } from 'react'
-import type { AdminPage, Category, Product } from '../types'
+import type { AdminOrder, AdminPage, Category, Product } from '../types'
+import { adminOrders } from '../mock/admin'
 import { IconButton } from '../components/Button'
 import { AdminProducts } from './AdminProducts'
 import { AdminCategories } from './AdminCategories'
+import { AdminOrders } from './AdminOrders'
 
 type Props = {
   shopName: string
@@ -27,6 +29,7 @@ const tabs: { id: AdminPage; name: string }[] = [
 export function AdminApp(props: Props) {
   const { shopName, products, categories, groups, onProducts, onCategories, onToast, onClose } = props
   const [page, setPage] = useState<AdminPage>('products')
+  const [orders, setOrders] = useState<AdminOrder[]>(adminOrders)
 
   return (
     <>
@@ -62,7 +65,8 @@ export function AdminApp(props: Props) {
           onSaved={onToast}
         />
       )}
-      {page !== 'products' && page !== 'categories' && <p className="hist-empty">หน้านี้ยังไม่ได้ทำ</p>}
+      {page === 'orders' && <AdminOrders orders={orders} onChange={setOrders} onToast={onToast} />}
+      {(page === 'banners' || page === 'settings') && <p className="hist-empty">หน้านี้ยังไม่ได้ทำ</p>}
     </>
   )
 }

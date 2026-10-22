@@ -115,4 +115,17 @@ export type Notice = {
 
 export type Page = 'home' | 'cart' | 'payment' | 'history' | 'owned' | 'inbox'
 
+export type LogEntry = {
+  at: number
+  text: string
+  by: string
+  tone?: 'ok' | 'warn'
+}
+
+export type AdminOrder = Order & {
+  buyer: { name: string; id: number | null; license: string; online: boolean }
+  log: LogEntry[]
+  note?: string
+}
+
 export type AdminPage = 'products' | 'categories' | 'orders' | 'banners' | 'settings'
