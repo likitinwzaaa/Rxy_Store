@@ -13,6 +13,7 @@ import './styles/cart.css'
 import './styles/payment.css'
 import './styles/history.css'
 import './styles/inbox.css'
+import './styles/admin.css'
 
 if (isBrowser) {
   document.body.classList.add('browser')

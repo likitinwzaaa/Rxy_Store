@@ -2,6 +2,7 @@ Config = {}
 
 Config.OpenKey = 'F5'
 Config.Command = 'shop'
+Config.AdminCommand = 'shopadmin'
 
 -- ปิดแล้วยังเตือนถ้าเป็นอัปเดตแก้ช่องโหว่
 Config.UpdateCheck = true

@@ -3,7 +3,7 @@ import type { CartLine, Discount, InboxItem, Notice, Order, Page, Product } from
 import { useNuiEvent } from './hooks/useNuiEvent'
 import { fetchNui, isBrowser } from './lib/nui'
 import { applyTheme, type Theme } from './lib/theme'
-import { maxQty } from './lib/product'
+import { blockReason, maxQty } from './lib/product'
 import {
   banners,
   categories,
@@ -24,6 +24,7 @@ import { Payment } from './pages/Payment'
 import { History } from './pages/History'
 import { Inbox } from './pages/Inbox'
 import { GameToast } from './components/GameToast'
+import { AdminApp } from './admin/AdminApp'
 import { Toast, type ToastData } from './components/Toast'
 import { ProductModal } from './components/ProductModal'
 import { OrderModal } from './components/OrderModal'
@@ -33,6 +34,8 @@ if (isBrowser) applyTheme({ primary: '#FF7A1A' })
 // หน้าหลักของร้าน
 export default function App() {
   const [visible, setVisible] = useState(isBrowser)
+  const [admin, setAdmin] = useState(isBrowser && location.hash === '#admin')
+  const [catalog, setCatalog] = useState<Product[]>(products)
   const [page, setPage] = useState<Page>('home')
   const [cart, setCart] = useState<CartLine[]>([])
   const [discount, setDiscount] = useState<Discount | null>(null)
@@ -48,6 +51,7 @@ export default function App() {
 
   useNuiEvent<boolean>('setVisible', setVisible)
   useNuiEvent<Theme>('setTheme', applyTheme)
+  useNuiEvent<boolean>('setAdmin', setAdmin)
   useNuiEvent<Omit<Notice, 'key'>>('notify', (n) => {
     if (!n || typeof n.title !== 'string') return
     const lines = Array.isArray(n.lines) ? n.lines.filter((l) => typeof l === 'string').slice(0, 5) : []
@@ -58,14 +62,15 @@ export default function App() {
     if (!visible) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
-      if (detail) setDetail(null)
+      if (admin) close()
+      else if (detail) setDetail(null)
       else if (viewOrder) setViewOrder(null)
       else if (page === 'home' || page === 'payment') close()
       else setPage('home')
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [visible, detail, viewOrder, page])
+  }, [visible, admin, detail, viewOrder, page])
 
   const hideToast = useCallback(() => setToast(null), [])
   const hideNotice = useCallback(() => setNotice(null), [])
@@ -141,7 +146,7 @@ export default function App() {
   // สร้างคำสั่งซื้อจากตะกร้า
   function checkout() {
     const recipient = gift.on ? findPlayer(gift.id) : null
-    const o = createOrder(cart, products, discount, recipient)
+    const o = createOrder(cart, catalog, discount, recipient)
     setCartOrderId(o.id)
     startPay(o)
   }
@@ -162,7 +167,7 @@ export default function App() {
 
   // จ่ายเงินสำเร็จ ถ้าร้านปิดอยู่จะแจ้งเตือนมุมจอแทน
   function paid(o: Order, shopClosed = false) {
-    const delivery = deliver(o, products)
+    const delivery = deliver(o, catalog)
     const done: Order = {
       ...o,
       status: 'paid',
@@ -236,7 +241,7 @@ export default function App() {
 
   // ต่ออายุของ ใส่ตะกร้าแล้วไปหน้าตะกร้า
   function renewItem(productId: string) {
-    const p = products.find((x) => x.id === productId)
+    const p = catalog.find((x) => x.id === productId)
     if (p && addToCart(p)) go('cart')
   }
 
@@ -244,7 +249,24 @@ export default function App() {
     return notice ? <GameToast notice={notice} shopName="RXY STORE" openKey="F5" onDone={hideNotice} /> : null
   }
 
+  if (admin) {
+    return (
+      <div className="shop">
+        <AdminApp
+          shopName="RXY STORE"
+          products={catalog}
+          categories={categories}
+          onProducts={setCatalog}
+          onToast={(title) => setToast({ key: Date.now(), title })}
+          onClose={close}
+        />
+        <Toast toast={toast} onDone={hideToast} />
+      </div>
+    )
+  }
+
   const cartCount = cart.reduce((n, l) => n + l.qty, 0)
+  const onSale = catalog.filter((p) => p.enabled !== false && !(p.hideWhenBlocked && blockReason(p)))
   const catName = (id: string) => categories.find((c) => c.id === id)?.name ?? ''
   const order = orders.find((o) => o.id === payId) ?? null
 
@@ -253,7 +275,7 @@ export default function App() {
       {page === 'home' && (
         <Home
           shopName="RXY STORE"
-          products={products}
+          products={onSale}
           categories={categories}
           banners={banners}
           cartCount={cartCount}
@@ -268,7 +290,7 @@ export default function App() {
       {page === 'cart' && (
         <Cart
           lines={cart}
-          products={products}
+          products={catalog}
           categoryName={catName}
           discount={discount}
           gift={gift}
@@ -322,7 +344,7 @@ export default function App() {
           tab={page}
           orders={orders}
           owned={owned}
-          priceOf={(id) => products.find((p) => p.id === id)?.price ?? null}
+          priceOf={(id) => catalog.find((p) => p.id === id)?.price ?? null}
           onTab={go}
           onPay={startPay}
           onView={setViewOrder}

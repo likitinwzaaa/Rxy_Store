@@ -24,7 +24,7 @@ export const products: Product[] = [
     category: 'item',
     price: 299,
     featured: true,
-    rewards: [{ kind: 'item', label: 'บัตรสกิน Noroi', amount: 9 }],
+    rewards: [{ kind: 'item', label: 'บัตรสกิน Noroi', value: 'noroi_card', amount: 9 }],
   },
   {
     id: 'sultan_rs',
@@ -38,9 +38,9 @@ export const products: Product[] = [
     bought: 0,
     saleEndsAt: now + 2 * 60 * 60 * 1000,
     rewards: [
-      { kind: 'vehicle', label: 'Sultan RS Classic', amount: 1 },
-      { kind: 'item', label: 'ชุดซ่อมรถ', amount: 2 },
-      { kind: 'money', label: 'เงินในเกม', amount: 5000 },
+      { kind: 'vehicle', label: 'Sultan RS Classic', value: 'sultanrs', amount: 1 },
+      { kind: 'item', label: 'ชุดซ่อมรถ', value: 'repairkit', amount: 2 },
+      { kind: 'money', label: 'เงินในเกม', value: 'bank', amount: 5000 },
     ],
   },
   {
@@ -49,7 +49,7 @@ export const products: Product[] = [
     category: 'vip',
     price: 199,
     featured: true,
-    rewards: [{ kind: 'rank', label: 'VIP Gold', amount: 1, days: 30 }],
+    rewards: [{ kind: 'rank', label: 'VIP Gold', value: 'vip_gold', amount: 1, days: 30 }],
   },
   {
     id: 'points_1000',

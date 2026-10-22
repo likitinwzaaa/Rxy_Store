@@ -3,6 +3,7 @@ export type RewardKind = 'item' | 'vehicle' | 'rank' | 'points' | 'money' | 'com
 export type Reward = {
   kind: RewardKind
   label: string
+  value?: string
   amount: number
   days?: number | null
 }
@@ -22,6 +23,8 @@ export type Product = {
   bought?: number
   startsAt?: number | null
   saleEndsAt?: number | null
+  enabled?: boolean
+  hideWhenBlocked?: boolean
 }
 
 export type Category = {
@@ -108,3 +111,5 @@ export type Notice = {
 }
 
 export type Page = 'home' | 'cart' | 'payment' | 'history' | 'owned' | 'inbox'
+
+export type AdminPage = 'products' | 'categories' | 'orders' | 'banners' | 'settings'

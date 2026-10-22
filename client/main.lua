@@ -1,8 +1,8 @@
 local isOpen = false
 local themeSent = false
 
--- เปิด/ปิดหน้าร้าน
-local function setOpen(state)
+-- เปิด/ปิดหน้าร้าน ส่ง admin = true ถ้าจะเปิดหน้าแอดมิน
+local function setOpen(state, admin)
     if isOpen == state then return end
     isOpen = state
 
@@ -11,12 +11,20 @@ local function setOpen(state)
         themeSent = true
     end
 
+    if state then
+        SendNUIMessage({ action = 'setAdmin', data = admin == true })
+    end
+
     SetNuiFocus(state, state)
     SendNUIMessage({ action = 'setVisible', data = state })
 end
 
 RegisterCommand(Config.Command, function()
     setOpen(not isOpen)
+end, false)
+
+RegisterCommand(Config.AdminCommand, function()
+    setOpen(true, true)
 end, false)
 
 RegisterKeyMapping(Config.Command, 'เปิดร้านค้า', 'keyboard', Config.OpenKey)
