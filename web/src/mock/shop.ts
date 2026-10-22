@@ -1,4 +1,4 @@
-import type { Banner, CartLine, Category, Delivery, Discount, Order, Owned, Product } from '../types'
+import type { Banner, CartLine, Category, Delivery, Discount, InboxItem, Order, Owned, Product } from '../types'
 import { cartTotals } from '../lib/cart'
 
 const day = 24 * 60 * 60 * 1000
@@ -154,7 +154,6 @@ export const products: Product[] = [
   },
 ]
 
-export const inboxCount = 3
 
 export const characterName = 'Somchai Jaidee'
 
@@ -320,4 +319,13 @@ export const owned: Owned[] = [
   { id: 'o2', productId: 'vip_gold', name: 'VIP Gold', label: 'VIP 30 วัน', startsAt: now - 168 * hour, endsAt: now + 552 * hour },
   { id: 'o3', productId: 'halloween_set', name: 'ชุดปีกเทวดา', label: 'ไอเทม 14 วัน', startsAt: now - 216 * hour, endsAt: now + 120 * hour },
   { id: 'o4', productId: 'vip_silver', name: 'VIP Silver', label: 'VIP 7 วัน', startsAt: now - 30 * day, endsAt: now - 23 * day, pulledAt: now - 23 * day },
+]
+
+// กล่องรับของจำลอง
+export const inbox: InboxItem[] = [
+  { id: 'i1', name: 'VIP Gold 30 วัน', orderId: 'RXY-261022-0088', from: 'Mint T.', reason: 'กดรับได้เลย เริ่มนับวันตอนกดรับ' },
+  { id: 'i2', name: 'ชุดเริ่มต้น ×1', orderId: 'RXY-261021-0083', reason: 'กระเป๋าเต็ม ต้องว่างอย่างน้อย 3 ช่อง', blocked: true },
+  { id: 'i3', name: 'Elegy Retro Custom', orderId: 'RXY-261018-0072', reason: 'การาจเต็ม ต้องมีช่องว่าง 1 ช่อง', blocked: true },
+  { id: 'i4', name: '1,000 พอยท์', orderId: 'RXY-261015-0040', reason: 'กดรับได้เลย' },
+  { id: 'i5', name: 'บัตรสกิน Noroi ทุกชิ้น', orderId: 'RXY-261019-0064', reason: 'เข้ากระเป๋าแล้ว', claimedAt: now - day },
 ]

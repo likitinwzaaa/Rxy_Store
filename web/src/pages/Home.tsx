@@ -71,7 +71,7 @@ export function Home(props: Props) {
         <button type="button" className="ulink head-link" onClick={() => onGo('history')}>
           ประวัติ
         </button>
-        <IconButton icon="gift" label="กล่องรับของ" badge={inboxCount} badgeColor="accent-2" />
+        <IconButton icon="gift" label="กล่องรับของ" badge={inboxCount} badgeColor="accent-2" onClick={() => onGo('inbox')} />
         <IconButton icon="cart" label="ตะกร้า" badge={cartCount} onClick={() => onGo('cart')} />
         <IconButton icon="close" label="ปิดร้าน" onClick={onClose} />
       </header>

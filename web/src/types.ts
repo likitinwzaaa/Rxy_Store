@@ -90,4 +90,21 @@ export type Owned = {
   pulledAt?: number | null
 }
 
-export type Page = 'home' | 'cart' | 'payment' | 'history' | 'owned'
+export type InboxItem = {
+  id: string
+  name: string
+  orderId: string
+  from?: string | null
+  reason: string
+  blocked?: boolean
+  claimedAt?: number | null
+}
+
+export type Notice = {
+  key: number
+  title: string
+  lines: string[]
+  footer?: string
+}
+
+export type Page = 'home' | 'cart' | 'payment' | 'history' | 'owned' | 'inbox'

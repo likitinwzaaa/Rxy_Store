@@ -21,6 +21,7 @@ type Props = {
   onClose: () => void
   onExpire: () => void
   onDevPaid?: () => void
+  onDevPaidLater?: () => void
 }
 
 // หน้าจ่ายเงิน รวมตอนรอจ่าย จ่ายแล้ว และ QR หมดเวลา
@@ -38,6 +39,9 @@ export function Payment(props: Props) {
               จำลอง
               <button type="button" className="ulink" onClick={props.onDevPaid}>
                 จ่ายแล้ว
+              </button>
+              <button type="button" className="ulink" onClick={props.onDevPaidLater}>
+                จ่ายตอนปิดร้าน
               </button>
               <button type="button" className="ulink" onClick={props.onExpire}>
                 หมดเวลา

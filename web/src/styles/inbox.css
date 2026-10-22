@@ -1,0 +1,203 @@
+.claim-all {
+  margin-right: 4px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.inbox {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 24px;
+}
+
+.inbox-note {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.inbox-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  animation: enter 0.4s var(--ease) both;
+  transition: background-color 0.15s, border-color 0.15s, opacity 0.4s;
+}
+
+.inbox-row:hover {
+  background: #161618;
+  border-color: #33333a;
+}
+
+.inbox-row.claimed > * {
+  opacity: 0.4;
+  transition: opacity 0.4s;
+}
+
+.inbox-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.inbox-info > b {
+  font-size: 15px;
+}
+
+.inbox-order {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.inbox-gift {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--accent-2);
+}
+
+.inbox-gift b {
+  color: var(--text);
+}
+
+.inbox-why {
+  width: 260px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.inbox-why.warn {
+  color: var(--accent);
+}
+
+.inbox-btn {
+  width: 80px;
+  border-color: #3a3a40;
+}
+
+.inbox-done {
+  width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.game-toast {
+  position: fixed;
+  top: 40px;
+  right: 40px;
+  width: 360px;
+  background: var(--bg);
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  overflow: hidden;
+  animation: slide-in 0.45s var(--ease) both;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.gt-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+.gt-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gt-head svg {
+  flex: none;
+  stroke: var(--accent-2);
+}
+
+.gt-head b {
+  font-size: 15px;
+}
+
+.gt-head span {
+  margin-left: auto;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.gt-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: #d4d4da;
+}
+
+.gt-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.gt-foot span {
+  flex: 1;
+}
+
+.gt-foot kbd {
+  height: 22px;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  border: 1px solid #3a3a40;
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 11px;
+}
+
+.gt-track {
+  height: 2px;
+  background: #1a1a1d;
+}
+
+.gt-track div {
+  height: 2px;
+  background: var(--text);
+  transform-origin: left;
+  animation: shrink 8s linear 0.45s both;
+}
+
+@keyframes shrink {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}

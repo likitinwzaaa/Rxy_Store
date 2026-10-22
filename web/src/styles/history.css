@@ -280,6 +280,9 @@
 
 .own.gone {
   color: #7c7c85;
+}
+
+.own.gone > * {
   opacity: 0.5;
 }
 

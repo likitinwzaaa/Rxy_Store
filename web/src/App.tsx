@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { CartLine, Discount, Order, Page, Product } from './types'
+import type { CartLine, Discount, InboxItem, Notice, Order, Page, Product } from './types'
 import { useNuiEvent } from './hooks/useNuiEvent'
 import { fetchNui, isBrowser } from './lib/nui'
 import { applyTheme, type Theme } from './lib/theme'
@@ -12,7 +12,7 @@ import {
   createOrder,
   deliver,
   findPlayer,
-  inboxCount,
+  inbox,
   owned,
   pastOrders,
   products,
@@ -22,6 +22,8 @@ import { Home } from './pages/Home'
 import { Cart, type Gift } from './pages/Cart'
 import { Payment } from './pages/Payment'
 import { History } from './pages/History'
+import { Inbox } from './pages/Inbox'
+import { GameToast } from './components/GameToast'
 import { Toast, type ToastData } from './components/Toast'
 import { ProductModal } from './components/ProductModal'
 import { OrderModal } from './components/OrderModal'
@@ -41,9 +43,16 @@ export default function App() {
   const [detail, setDetail] = useState<Product | null>(null)
   const [viewOrder, setViewOrder] = useState<Order | null>(null)
   const [toast, setToast] = useState<ToastData | null>(null)
+  const [inboxItems, setInboxItems] = useState<InboxItem[]>(inbox)
+  const [notice, setNotice] = useState<Notice | null>(null)
 
   useNuiEvent<boolean>('setVisible', setVisible)
   useNuiEvent<Theme>('setTheme', applyTheme)
+  useNuiEvent<Omit<Notice, 'key'>>('notify', (n) => {
+    if (!n || typeof n.title !== 'string') return
+    const lines = Array.isArray(n.lines) ? n.lines.filter((l) => typeof l === 'string').slice(0, 5) : []
+    setNotice({ key: Date.now(), title: n.title, lines, footer: typeof n.footer === 'string' ? n.footer : undefined })
+  })
 
   useEffect(() => {
     if (!visible) return
@@ -59,6 +68,7 @@ export default function App() {
   }, [visible, detail, viewOrder, page])
 
   const hideToast = useCallback(() => setToast(null), [])
+  const hideNotice = useCallback(() => setNotice(null), [])
 
   const expire = useCallback(() => {
     setOrders((list) => list.map((o) => (o.id === payId && o.status === 'pending' ? { ...o, status: 'expired' } : o)))
@@ -150,16 +160,41 @@ export default function App() {
     go(o.id === cartOrderId ? 'cart' : 'history')
   }
 
-  // จ่ายเงินสำเร็จ
-  function paid(o: Order) {
+  // จ่ายเงินสำเร็จ ถ้าร้านปิดอยู่จะแจ้งเตือนมุมจอแทน
+  function paid(o: Order, shopClosed = false) {
+    const delivery = deliver(o, products)
     const done: Order = {
       ...o,
       status: 'paid',
       paidAt: Date.now(),
       ref: 'chrg_' + Math.random().toString(36).slice(2, 10),
-      delivery: deliver(o, products),
+      delivery,
     }
     setOrders((list) => list.map((x) => (x.id === o.id ? done : x)))
+
+    const waiting = o.recipient ? 0 : delivery.reduce((n, d) => n + d.inbox, 0)
+    if (waiting) {
+      const items: InboxItem[] = delivery
+        .filter((d) => d.inbox > 0)
+        .map((d, i) => ({
+          id: `${o.id}-${i}`,
+          name: d.name.replace(/ ×\d+$/, '') + ` ×${d.inbox}`,
+          orderId: o.id,
+          reason: 'กระเป๋าเต็ม ต้องว่างอย่างน้อย 3 ช่อง',
+          blocked: true,
+        }))
+      setInboxItems((list) => [...items, ...list])
+    }
+
+    if (shopClosed) {
+      setNotice({
+        key: Date.now(),
+        title: o.recipient ? `จ่ายเรียบร้อย ส่งของให้ ${o.recipient} แล้ว` : 'จ่ายเรียบร้อย ได้ของแล้ว',
+        lines: delivery.map((d) => `${d.name} · ${d.where}`),
+        footer: waiting ? `อีก ${waiting} รายการรออยู่ในกล่องรับของ` : undefined,
+      })
+    }
+
     if (o.id === cartOrderId) {
       setCart([])
       setDiscount(null)
@@ -168,13 +203,46 @@ export default function App() {
     }
   }
 
+  // รับของจากกล่องรับของ
+  function claim(item: InboxItem) {
+    if (item.blocked) {
+      setToast({ key: Date.now(), tone: 'warn', title: 'ยังรับไม่ได้', detail: item.reason })
+      return
+    }
+    setInboxItems((list) =>
+      list.map((x) => (x.id === item.id ? { ...x, claimedAt: Date.now(), reason: 'เข้าตัวละครแล้ว' } : x)),
+    )
+    setToast({ key: Date.now(), title: 'รับของแล้ว', detail: item.name })
+  }
+
+  // รับทุกชิ้นที่รับได้
+  function claimAll() {
+    const ready = inboxItems.filter((x) => !x.claimedAt && !x.blocked)
+    const stuck = inboxItems.filter((x) => !x.claimedAt && x.blocked).length
+    if (ready.length === 0) {
+      setToast({ key: Date.now(), tone: 'warn', title: 'ยังไม่มีของที่รับได้', detail: 'เคลียร์ที่ว่างก่อนแล้วลองใหม่' })
+      return
+    }
+    const ids = new Set(ready.map((x) => x.id))
+    setInboxItems((list) =>
+      list.map((x) => (ids.has(x.id) ? { ...x, claimedAt: Date.now(), reason: 'เข้าตัวละครแล้ว' } : x)),
+    )
+    setToast({
+      key: Date.now(),
+      title: `รับแล้ว ${ready.length} รายการ`,
+      detail: stuck ? `อีก ${stuck} รายการยังรับไม่ได้` : undefined,
+    })
+  }
+
   // ต่ออายุของ ใส่ตะกร้าแล้วไปหน้าตะกร้า
   function renewItem(productId: string) {
     const p = products.find((x) => x.id === productId)
     if (p && addToCart(p)) go('cart')
   }
 
-  if (!visible) return null
+  if (!visible) {
+    return notice ? <GameToast notice={notice} shopName="RXY STORE" openKey="F5" onDone={hideNotice} /> : null
+  }
 
   const cartCount = cart.reduce((n, l) => n + l.qty, 0)
   const catName = (id: string) => categories.find((c) => c.id === id)?.name ?? ''
@@ -189,7 +257,7 @@ export default function App() {
           categories={categories}
           banners={banners}
           cartCount={cartCount}
-          inboxCount={inboxCount}
+          inboxCount={inboxItems.filter((x) => !x.claimedAt).length}
           onAdd={addToCart}
           onOpen={setDetail}
           onGo={go}
@@ -235,9 +303,16 @@ export default function App() {
             setPayId(null)
             go('history')
           }}
-          onInbox={() => setToast({ key: Date.now(), title: 'กล่องรับของยังไม่ได้ทำ', tone: 'warn' })}
+          onInbox={() => {
+            setPayId(null)
+            go('inbox')
+          }}
           onExpire={expire}
           onDevPaid={() => paid(order)}
+          onDevPaidLater={() => {
+            close()
+            setTimeout(() => paid(order, true), 1500)
+          }}
           onClose={close}
         />
       )}
@@ -255,6 +330,10 @@ export default function App() {
           onBack={() => go('home')}
           onClose={close}
         />
+      )}
+
+      {page === 'inbox' && (
+        <Inbox items={inboxItems} onClaim={claim} onClaimAll={claimAll} onBack={() => go('home')} onClose={close} />
       )}
 
       {detail && (
