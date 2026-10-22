@@ -949,3 +949,129 @@
 .confirm-code.ok {
   border-color: var(--text);
 }
+
+.ban-sec {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.ban-sec .input {
+  width: 46px;
+  height: 30px;
+  padding: 0 6px;
+}
+
+.ban-sec + .adm-add {
+  margin-left: 12px;
+}
+
+.brow {
+  display: grid;
+  grid-template-columns: 20px 238px minmax(0, 1fr) 110px 44px;
+  gap: 14px;
+  align-items: center;
+  padding: 0 12px;
+}
+
+.adm-rows .brow {
+  height: 58px;
+  flex: none;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  animation: enter 0.4s var(--ease) both;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.adm-rows .brow:hover {
+  background: #161618;
+  border-color: #33333a;
+}
+
+.adm-rows .brow.on {
+  background: var(--hover);
+  border-color: #4a4a52;
+}
+
+.brow.dragging > * {
+  opacity: 0.4;
+}
+
+.brow.dim .brow-thumb,
+.brow.dim .brow-text {
+  opacity: 0.55;
+}
+
+.brow-thumb {
+  width: 238px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #1a1a1d;
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6e6e77;
+  white-space: nowrap;
+}
+
+.brow-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.brow-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brow-text b,
+.brow-text small {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.brow-text b {
+  font-weight: 600;
+}
+
+.brow-text small {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.ban-form {
+  width: 380px;
+}
+
+.ban-preview {
+  aspect-ratio: 1744 / 264;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #1a1a1d;
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6e6e77;
+}
+
+.ban-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

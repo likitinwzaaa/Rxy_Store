@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import type { AdminOrder, AdminPage, Category, Product } from '../types'
+import type { AdminOrder, AdminPage, Banner, Category, Product } from '../types'
 import { adminOrders } from '../mock/admin'
 import { IconButton } from '../components/Button'
 import { AdminProducts } from './AdminProducts'
 import { AdminCategories } from './AdminCategories'
 import { AdminOrders } from './AdminOrders'
+import { AdminBanners } from './AdminBanners'
 
 type Props = {
   shopName: string
@@ -13,6 +14,10 @@ type Props = {
   groups: { id: string; name: string }[]
   onProducts: (list: Product[]) => void
   onCategories: (list: Category[]) => void
+  banners: Banner[]
+  bannerSeconds: number
+  onBanners: (list: Banner[]) => void
+  onBannerSeconds: (n: number) => void
   onToast: (msg: string) => void
   onClose: () => void
 }
@@ -28,6 +33,7 @@ const tabs: { id: AdminPage; name: string }[] = [
 // หน้าแอดมิน
 export function AdminApp(props: Props) {
   const { shopName, products, categories, groups, onProducts, onCategories, onToast, onClose } = props
+  const { banners, bannerSeconds, onBanners, onBannerSeconds } = props
   const [page, setPage] = useState<AdminPage>('products')
   const [orders, setOrders] = useState<AdminOrder[]>(adminOrders)
 
@@ -66,7 +72,18 @@ export function AdminApp(props: Props) {
         />
       )}
       {page === 'orders' && <AdminOrders orders={orders} onChange={setOrders} onToast={onToast} />}
-      {(page === 'banners' || page === 'settings') && <p className="hist-empty">หน้านี้ยังไม่ได้ทำ</p>}
+      {page === 'banners' && (
+        <AdminBanners
+          banners={banners}
+          seconds={bannerSeconds}
+          products={products}
+          categories={categories}
+          onChange={onBanners}
+          onSeconds={onBannerSeconds}
+          onSaved={onToast}
+        />
+      )}
+      {page === 'settings' && <p className="hist-empty">หน้านี้ยังไม่ได้ทำ</p>}
     </>
   )
 }

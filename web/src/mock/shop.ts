@@ -24,9 +24,11 @@ export const groups = [
 export const playerGroups: string[] = []
 
 export const banners: Banner[] = [
-  { id: 'b1', label: 'โปรเปิดเซิร์ฟ รถลด 30%', productId: 'sultan_rs' },
-  { id: 'b2', label: 'VIP Gold ได้พอยท์เพิ่ม 2 เท่า', productId: 'vip_gold' },
-  { id: 'b3', label: 'ชุดฮาโลวีน มาแล้ว 31 ต.ค.' },
+  { id: 'b1', label: 'โปรรถสายแข่ง 30%', link: { kind: 'category', id: 'vehicle' }, startsAt: now - day, endsAt: now + 2 * day },
+  { id: 'b2', label: 'VIP Gold ได้พอยท์เพิ่ม 2 เท่า', link: { kind: 'product', id: 'vip_gold' } },
+  { id: 'b3', label: 'ฮาโลวีน มาแล้ว 31 ต.ค.', link: { kind: 'none' }, startsAt: now + 9 * day },
+  { id: 'b4', label: 'เปิดเซิร์ฟซีซั่น 2', link: { kind: 'none' }, startsAt: now - 21 * day, endsAt: now - 15 * day },
+  { id: 'b5', label: 'ประกาศปิดปรับปรุง', link: { kind: 'none' }, enabled: false },
 ]
 
 export const products: Product[] = [

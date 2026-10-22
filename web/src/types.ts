@@ -36,11 +36,16 @@ export type Category = {
   hideEmpty?: boolean
 }
 
+export type BannerLink = { kind: 'none' } | { kind: 'product'; id: string } | { kind: 'category'; id: string }
+
 export type Banner = {
   id: string
   image?: string | null
   label: string
-  productId?: string
+  link: BannerLink
+  startsAt?: number | null
+  endsAt?: number | null
+  enabled?: boolean
 }
 
 export type CartLine = {

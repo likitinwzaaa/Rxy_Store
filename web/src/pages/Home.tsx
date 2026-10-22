@@ -12,6 +12,7 @@ type Props = {
   products: Product[]
   categories: Category[]
   banners: Banner[]
+  bannerSeconds: number
   cartCount: number
   inboxCount: number
   onAdd: (p: Product) => boolean | void
@@ -24,7 +25,7 @@ type View = { cat: string; q?: string }
 
 // หน้าแรกของร้าน
 export function Home(props: Props) {
-  const { shopName, products, categories, banners, cartCount, inboxCount, onAdd, onOpen, onGo, onClose } = props
+  const { shopName, products, categories, banners, bannerSeconds, cartCount, inboxCount, onAdd, onOpen, onGo, onClose } = props
   const [view, setView] = useState<View>({ cat: 'all' })
 
   const catName = (id: string) => categories.find((c) => c.id === id)?.name ?? ''
@@ -54,8 +55,13 @@ export function Home(props: Props) {
   const title = view.q ? `ผลค้นหา "${view.q}"` : view.cat === 'all' ? 'สินค้าทั้งหมด' : nav.find((n) => n.id === view.cat)?.name
 
   function openBanner(b: Banner) {
-    const p = products.find((x) => x.id === b.productId)
-    if (p) onOpen(p)
+    const link = b.link
+    if (link.kind === 'product') {
+      const p = products.find((x) => x.id === link.id)
+      if (p) onOpen(p)
+    } else if (link.kind === 'category' && categories.some((c) => c.id === link.id)) {
+      setView({ cat: link.id })
+    }
   }
 
   return (
@@ -80,7 +86,7 @@ export function Home(props: Props) {
         <CategoryNav items={nav} active={view.q ? '' : view.cat} onSelect={(cat) => setView({ cat })} />
 
         <main className="home-main">
-          {view.cat === 'all' && !view.q && <BannerSlider banners={banners} onOpen={openBanner} />}
+          {view.cat === 'all' && !view.q && <BannerSlider banners={banners} interval={bannerSeconds * 1000} onOpen={openBanner} />}
 
           <div className="home-title">
             <h2>{title}</h2>

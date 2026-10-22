@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { CartLine, Category, Discount, InboxItem, Notice, Order, Page, Product } from './types'
+import type { Banner, CartLine, Category, Discount, InboxItem, Notice, Order, Page, Product } from './types'
 import { useNuiEvent } from './hooks/useNuiEvent'
 import { fetchNui, isBrowser } from './lib/nui'
 import { applyTheme, type Theme } from './lib/theme'
 import { blockReason, maxQty } from './lib/product'
+import { bannerState } from './lib/banner'
 import {
   banners,
   categories,
@@ -39,6 +40,8 @@ export default function App() {
   const [admin, setAdmin] = useState(isBrowser && location.hash === '#admin')
   const [catalog, setCatalog] = useState<Product[]>(products)
   const [cats, setCats] = useState<Category[]>(categories)
+  const [bannerList, setBannerList] = useState<Banner[]>(banners)
+  const [bannerSeconds, setBannerSeconds] = useState(5)
   const [page, setPage] = useState<Page>('home')
   const [cart, setCart] = useState<CartLine[]>([])
   const [discount, setDiscount] = useState<Discount | null>(null)
@@ -262,6 +265,10 @@ export default function App() {
           groups={groups}
           onProducts={setCatalog}
           onCategories={setCats}
+          banners={bannerList}
+          bannerSeconds={bannerSeconds}
+          onBanners={setBannerList}
+          onBannerSeconds={setBannerSeconds}
           onToast={(title) => setToast({ key: Date.now(), title })}
           onClose={close}
         />
@@ -293,7 +300,8 @@ export default function App() {
           shopName="RXY STORE"
           products={onSale}
           categories={shownCats}
-          banners={banners}
+          banners={bannerList.filter((b) => bannerState(b) === 'live')}
+          bannerSeconds={bannerSeconds}
           cartCount={cartCount}
           inboxCount={inboxItems.filter((x) => !x.claimedAt).length}
           onAdd={addToCart}

@@ -41,6 +41,7 @@ export function BannerSlider({ banners, interval = 5000, onOpen }: Props) {
             className={i === index ? 'slide on' : 'slide'}
             aria-hidden={i !== index}
             tabIndex={i === index ? 0 : -1}
+            style={{ cursor: b.link.kind === 'none' ? 'default' : 'pointer' }}
             onClick={() => onOpen(b)}
           >
             {img ? <img src={img} alt={b.label} draggable={false} /> : <span className="slide-ph">{b.label}</span>}
