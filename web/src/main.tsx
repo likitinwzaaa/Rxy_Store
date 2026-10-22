@@ -9,6 +9,7 @@ import './styles/base.css'
 import './styles/ui.css'
 import './styles/home.css'
 import './styles/modal.css'
+import './styles/cart.css'
 
 if (isBrowser) {
   document.body.classList.add('browser')

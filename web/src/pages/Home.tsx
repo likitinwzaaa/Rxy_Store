@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { Banner, Category, Product } from '../types'
+import type { Banner, Category, Page, Product } from '../types'
 import { blockReason } from '../lib/product'
 import { IconButton } from '../components/Button'
 import { SearchBox } from '../components/SearchBox'
@@ -16,13 +16,15 @@ type Props = {
   inboxCount: number
   onAdd: (p: Product) => void
   onOpen: (p: Product) => void
+  onGo: (page: Page) => void
   onClose: () => void
 }
 
 type View = { cat: string; q?: string }
 
 // หน้าแรกของร้าน
-export function Home({ shopName, products, categories, banners, cartCount, inboxCount, onAdd, onOpen, onClose }: Props) {
+export function Home(props: Props) {
+  const { shopName, products, categories, banners, cartCount, inboxCount, onAdd, onOpen, onGo, onClose } = props
   const [view, setView] = useState<View>({ cat: 'all' })
 
   const catName = (id: string) => categories.find((c) => c.id === id)?.name ?? ''
@@ -70,7 +72,7 @@ export function Home({ shopName, products, categories, banners, cartCount, inbox
           ประวัติ
         </button>
         <IconButton icon="gift" label="กล่องรับของ" badge={inboxCount} badgeColor="accent-2" />
-        <IconButton icon="cart" label="ตะกร้า" badge={cartCount} />
+        <IconButton icon="cart" label="ตะกร้า" badge={cartCount} onClick={() => onGo('cart')} />
         <IconButton icon="close" label="ปิดร้าน" onClick={onClose} />
       </header>
 

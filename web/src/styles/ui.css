@@ -183,3 +183,105 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+.trash {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  color: #ff6b6b;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.trash:hover {
+  background: #2a1517;
+  color: #ff8a8a;
+}
+
+.input {
+  height: 36px;
+  min-width: 0;
+  padding: 0 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  outline: 0;
+  font-size: 13px;
+  transition: border-color 0.15s;
+}
+
+.input:hover {
+  border-color: #3a3a40;
+}
+
+.input:focus {
+  border-color: var(--text);
+}
+
+.input.bad {
+  border-color: var(--danger);
+  animation: shake 0.3s;
+}
+
+@keyframes shake {
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-group label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.field-err {
+  font-size: 12px;
+  color: #ff6b6b;
+}
+
+.page-head h1 {
+  margin: 0 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.page-sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.page-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back {
+  padding: 0 12px 0 8px;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.back svg {
+  transition: transform 0.2s;
+}
+
+.back:hover svg {
+  transform: translateX(-3px);
+}

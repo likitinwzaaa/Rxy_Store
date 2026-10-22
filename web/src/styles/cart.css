@@ -1,0 +1,264 @@
+.cart {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.cart-list {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 24px;
+  overflow-y: auto;
+}
+
+.cart-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  animation: enter 0.4s var(--ease) both;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.cart-row:hover {
+  background: #161618;
+  border-color: #33333a;
+}
+
+.cart-shot {
+  width: 88px;
+  height: 64px;
+  flex: none;
+  background: #1a1a1d;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cart-shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cart-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cart-cat,
+.cart-note {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.cart-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.cart-total {
+  width: 90px;
+  text-align: right;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.stepper.sm {
+  height: 32px;
+  border-radius: 8px;
+}
+
+.stepper.sm button {
+  width: 32px;
+  height: 30px;
+}
+
+.stepper.sm span {
+  width: 32px;
+}
+
+.cart-side {
+  width: 340px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px;
+  border-left: 1px solid var(--line);
+}
+
+.cart-side h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.code-row {
+  display: flex;
+  gap: 8px;
+}
+
+.code-row .input {
+  flex: 1;
+}
+
+.code-on {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 1px solid var(--accent-2);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--accent-2);
+  animation: drop 0.25s ease-out both;
+}
+
+.code-on .mono {
+  color: var(--text);
+}
+
+.code-on .ulink {
+  margin-left: auto;
+  font-size: 12px;
+}
+
+.sum {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.sum > div {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-2);
+}
+
+.sum > div .mono {
+  color: var(--text);
+}
+
+.sum .sum-off .mono {
+  color: var(--accent-2);
+}
+
+.sum-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.sum-total .mono {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.gift {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gift-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gift-field {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  background: var(--panel-2);
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  animation: drop 0.25s ease-out both;
+  transition: border-color 0.15s;
+}
+
+.gift-field:focus-within {
+  border-color: var(--text);
+}
+
+.gift-field.bad {
+  border-color: var(--danger);
+}
+
+.gift-field span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.gift-field input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font-size: 13px;
+}
+
+.gift-field b {
+  font-size: 13px;
+}
+
+.cart-pay {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notice {
+  margin: 0;
+  padding: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.notice b {
+  color: var(--text);
+}
+
+.pay-btn svg {
+  transition: transform 0.2s;
+}
+
+.pay-btn:hover:not(:disabled) svg {
+  transform: translateX(4px);
+}
+
+.cart-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--muted);
+}
+
+.cart-empty p {
+  margin: 0;
+}

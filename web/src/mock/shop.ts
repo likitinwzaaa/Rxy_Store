@@ -1,4 +1,4 @@
-import type { Banner, Category, Product } from '../types'
+import type { Banner, Category, Discount, Product } from '../types'
 
 const day = 24 * 60 * 60 * 1000
 const now = Date.now()
@@ -154,3 +154,26 @@ export const products: Product[] = [
 ]
 
 export const inboxCount = 3
+
+export const characterName = 'Somchai Jaidee'
+
+const codes: Record<string, Discount & { startsAt?: number }> = {
+  RXY10: { code: 'RXY10', kind: 'percent', value: 10 },
+  NEWBIE: { code: 'NEWBIE', kind: 'fixed', value: 20 },
+  HALLOWEEN: { code: 'HALLOWEEN', kind: 'percent', value: 25, startsAt: now + 9 * day },
+}
+
+// ตรวจโค้ดส่วนลด
+export function checkCode(input: string): { ok: true; discount: Discount } | { ok: false; error: string } {
+  const c = codes[input.trim().toUpperCase()]
+  if (!c) return { ok: false, error: 'ไม่มีโค้ดนี้' }
+  if (c.startsAt && c.startsAt > Date.now()) return { ok: false, error: 'โค้ดนี้ยังใช้ไม่ได้' }
+  return { ok: true, discount: { code: c.code, kind: c.kind, value: c.value } }
+}
+
+const online: Record<string, string> = { '5': 'Mint T.', '23': 'Ploy Wong', '112': 'Apiploy S.' }
+
+// หาชื่อผู้เล่นที่ออนไลน์จาก ID
+export function findPlayer(id: string) {
+  return online[id.trim()] ?? null
+}

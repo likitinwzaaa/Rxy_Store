@@ -41,3 +41,11 @@ export type CartLine = {
   id: string
   qty: number
 }
+
+export type Discount = {
+  code: string
+  kind: 'percent' | 'fixed'
+  value: number
+}
+
+export type Page = 'home' | 'cart'
