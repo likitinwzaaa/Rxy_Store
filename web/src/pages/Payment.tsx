@@ -16,6 +16,7 @@ type Props = {
   onRenew: () => void
   onEditCart: () => void
   onHome: () => void
+  onHistory: () => void
   onInbox: () => void
   onClose: () => void
   onExpire: () => void
@@ -159,7 +160,7 @@ function Expired({ shopName, order, onRenew, onEditCart }: Props) {
 }
 
 // จ่ายเรียบร้อย
-function Done({ order, characterName, onHome, onInbox }: Props) {
+function Done({ order, characterName, onHome, onHistory, onInbox }: Props) {
   const inbox = (order.delivery ?? []).filter((d) => d.inbox > 0)
 
   return (
@@ -252,6 +253,9 @@ function Done({ order, characterName, onHome, onInbox }: Props) {
           <Button variant="solid" size="lg" onClick={onHome}>
             หน้าแรก
           </Button>
+          <button type="button" className="ulink" onClick={onHistory}>
+            ประวัติการซื้อ
+          </button>
         </div>
       </aside>
     </div>

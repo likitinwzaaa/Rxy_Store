@@ -1,4 +1,4 @@
-import type { Banner, CartLine, Category, Delivery, Discount, Order, Product } from '../types'
+import type { Banner, CartLine, Category, Delivery, Discount, Order, Owned, Product } from '../types'
 import { cartTotals } from '../lib/cart'
 
 const day = 24 * 60 * 60 * 1000
@@ -190,15 +190,20 @@ const where: Record<string, string> = {
 
 let seq = 90
 
-// สร้างคำสั่งซื้อจำลอง
-export function createOrder(cart: CartLine[], list: Product[], discount: Discount | null, recipient: string | null): Order {
+// เลขคำสั่งซื้อ เช่น RXY-261022-0091
+function nextId() {
   const d = new Date()
   const ymd = String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0')
-  const { subtotal, off, total } = cartTotals(cart, list, discount)
   seq += 1
+  return `RXY-${ymd}-${String(seq).padStart(4, '0')}`
+}
+
+// สร้างคำสั่งซื้อจำลอง
+export function createOrder(cart: CartLine[], list: Product[], discount: Discount | null, recipient: string | null): Order {
+  const { subtotal, off, total } = cartTotals(cart, list, discount)
 
   return {
-    id: `RXY-${ymd}-${String(seq).padStart(4, '0')}`,
+    id: nextId(),
     lines: cart.map((l) => {
       const p = list.find((x) => x.id === l.id)!
       return { id: p.id, name: p.name, price: p.price, qty: l.qty }
@@ -235,3 +240,84 @@ export function deliver(order: Order, list: Product[]): Delivery[] {
     return { name, where: where[kind], inbox: 0 }
   })
 }
+
+// สร้าง QR ใหม่จากคำสั่งซื้อเดิมที่หมดเวลา
+export function renewOrder(old: Order): Order {
+  return { ...old, id: nextId(), createdAt: Date.now(), expiresAt: Date.now() + 10 * 60 * 1000, status: 'pending' }
+}
+
+const hour = 60 * 60 * 1000
+
+// ประวัติการซื้อจำลอง
+export const pastOrders: Order[] = [
+  {
+    id: 'RXY-261020-0077',
+    lines: [{ id: 'vip_silver', name: 'VIP Silver 7 วัน', price: 59, qty: 1 }],
+    subtotal: 59,
+    off: 0,
+    total: 59,
+    recipient: 'Ploy Wong',
+    createdAt: now - 2 * day,
+    expiresAt: now - 2 * day + 10 * 60 * 1000,
+    paidAt: now - 2 * day + 60 * 1000,
+    status: 'paid',
+    ref: 'chrg_5x9k2f1a',
+    delivery: [{ name: 'VIP Silver 7 วัน', where: 'ส่งเข้ากล่องรับของของ Ploy Wong แล้ว', inbox: 0 }],
+  },
+  {
+    id: 'RXY-261019-0064',
+    lines: [{ id: 'noroi_skin', name: 'บัตรสกิน Noroi ทุกชิ้น', price: 299, qty: 1 }],
+    subtotal: 299,
+    off: 0,
+    total: 299,
+    createdAt: now - 3 * day,
+    expiresAt: now - 3 * day + 10 * 60 * 1000,
+    paidAt: now - 3 * day + 2 * 60 * 1000,
+    status: 'paid',
+    ref: 'chrg_8b2m1k0q',
+    delivery: [{ name: 'บัตรสกิน Noroi ทุกชิ้น', where: 'เข้ากระเป๋าแล้ว', inbox: 0 }],
+  },
+  {
+    id: 'RXY-261015-0040',
+    lines: [{ id: 'points_1000', name: '1,000 พอยท์', price: 100, qty: 1 }],
+    subtotal: 100,
+    off: 0,
+    total: 100,
+    createdAt: now - 7 * day,
+    expiresAt: now - 7 * day + 10 * 60 * 1000,
+    paidAt: now - 7 * day + 3 * 60 * 1000,
+    status: 'paid',
+    ref: 'chrg_1q9w8e7r',
+    delivery: [{ name: '1,000 พอยท์', where: 'เข้าบัญชีพอยท์แล้ว', inbox: 0 }],
+  },
+  {
+    id: 'RXY-261015-0039',
+    lines: [{ id: 'points_1000', name: '1,000 พอยท์', price: 100, qty: 1 }],
+    subtotal: 100,
+    off: 0,
+    total: 100,
+    createdAt: now - 7 * day - 6 * 60 * 1000,
+    expiresAt: now - 7 * day + 4 * 60 * 1000,
+    status: 'expired',
+  },
+  {
+    id: 'RXY-261008-0012',
+    lines: [{ id: 'elegy_rent', name: 'Elegy Retro Custom เช่า 7 วัน', price: 150, qty: 1 }],
+    subtotal: 150,
+    off: 0,
+    total: 150,
+    createdAt: now - 14 * day,
+    expiresAt: now - 14 * day + 10 * 60 * 1000,
+    paidAt: now - 14 * day + 60 * 1000,
+    status: 'refunded',
+    ref: 'chrg_0p9o8i7u',
+  },
+]
+
+// ของที่มีวันหมดจำลอง
+export const owned: Owned[] = [
+  { id: 'o1', productId: 'elegy_rent', name: 'Elegy Retro Custom', label: 'รถเช่า 7 วัน', startsAt: now - 140 * hour, endsAt: now + 28 * hour },
+  { id: 'o2', productId: 'vip_gold', name: 'VIP Gold', label: 'VIP 30 วัน', startsAt: now - 168 * hour, endsAt: now + 552 * hour },
+  { id: 'o3', productId: 'halloween_set', name: 'ชุดปีกเทวดา', label: 'ไอเทม 14 วัน', startsAt: now - 216 * hour, endsAt: now + 120 * hour },
+  { id: 'o4', productId: 'vip_silver', name: 'VIP Silver', label: 'VIP 7 วัน', startsAt: now - 30 * day, endsAt: now - 23 * day, pulledAt: now - 23 * day },
+]

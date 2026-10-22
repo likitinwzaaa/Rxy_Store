@@ -61,7 +61,7 @@ export type Delivery = {
   inbox: number
 }
 
-export type OrderStatus = 'pending' | 'paid' | 'expired'
+export type OrderStatus = 'pending' | 'paid' | 'expired' | 'refunded'
 
 export type Order = {
   id: string
@@ -80,4 +80,14 @@ export type Order = {
   delivery?: Delivery[]
 }
 
-export type Page = 'home' | 'cart' | 'payment'
+export type Owned = {
+  id: string
+  productId: string
+  name: string
+  label: string
+  startsAt: number
+  endsAt: number
+  pulledAt?: number | null
+}
+
+export type Page = 'home' | 'cart' | 'payment' | 'history' | 'owned'

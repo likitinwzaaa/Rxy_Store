@@ -11,6 +11,7 @@ import './styles/home.css'
 import './styles/modal.css'
 import './styles/cart.css'
 import './styles/payment.css'
+import './styles/history.css'
 
 if (isBrowser) {
   document.body.classList.add('browser')

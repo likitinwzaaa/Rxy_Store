@@ -14,7 +14,7 @@ type Props = {
   banners: Banner[]
   cartCount: number
   inboxCount: number
-  onAdd: (p: Product) => void
+  onAdd: (p: Product) => boolean | void
   onOpen: (p: Product) => void
   onGo: (page: Page) => void
   onClose: () => void
@@ -68,7 +68,7 @@ export function Home(props: Props) {
           onPick={onOpen}
           onShowAll={(q) => setView({ cat: 'all', q })}
         />
-        <button type="button" className="ulink head-link">
+        <button type="button" className="ulink head-link" onClick={() => onGo('history')}>
           ประวัติ
         </button>
         <IconButton icon="gift" label="กล่องรับของ" badge={inboxCount} badgeColor="accent-2" />

@@ -7,7 +7,7 @@ type Props = {
   product: Product
   categoryName: string
   delay: number
-  onAdd: (p: Product) => void
+  onAdd: (p: Product) => boolean | void
   onOpen: (p: Product) => void
 }
 

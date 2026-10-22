@@ -1,0 +1,432 @@
+.hist-search {
+  width: 320px;
+  flex: none;
+  margin-right: 0;
+}
+
+.hist-search .search-field {
+  height: 34px;
+}
+
+.sug-2 {
+  height: 46px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 1px;
+}
+
+.sug-sub {
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.hist {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 24px 20px;
+}
+
+.tabs {
+  height: 44px;
+  flex: none;
+  display: flex;
+  gap: 4px;
+  margin: 0 -12px 6px;
+  border-bottom: 1px solid #1a1a1d;
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  background: none;
+  border: 0;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.tab::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -1px;
+  height: 2px;
+  background: var(--text);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s var(--ease);
+}
+
+.tab:hover {
+  color: #fff;
+}
+
+.tab:hover::after,
+.tab.on::after {
+  transform: scaleX(1);
+}
+
+.tab.on {
+  color: #fff;
+  font-weight: 600;
+}
+
+.tab-badge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+}
+
+.hist-list {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.hist-row {
+  display: grid;
+  grid-template-columns: 190px 130px minmax(0, 1fr) 90px 130px 96px;
+  gap: 16px;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.hist-cols {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.hist-item {
+  height: 52px;
+  flex: none;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  animation: enter 0.4s var(--ease) both;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.hist-item:hover {
+  background: #161618;
+  border-color: #33333a;
+}
+
+.right {
+  display: flex;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.hist-date {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.hist-items {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.copy {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: -4px -6px;
+  padding: 4px 6px;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: copy;
+  transition: background-color 0.15s;
+}
+
+.copy:hover {
+  background: var(--hover);
+}
+
+.copy svg {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.copy:hover svg {
+  opacity: 0.7;
+}
+
+.copied {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 4px);
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--text);
+  color: var(--bg);
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  animation: copied 0.18s ease-out both;
+}
+
+@keyframes copied {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 4px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.od-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.od-status i {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.od-status.accent {
+  color: var(--accent);
+}
+
+.od-status.accent-2 {
+  color: var(--accent-2);
+}
+
+.od-status.ok {
+  color: var(--text);
+}
+
+.od-status.off {
+  color: #7c7c85;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.hist-hint {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.hist-empty {
+  margin: 60px 0;
+  text-align: center;
+  color: var(--muted);
+}
+
+.own {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--accent-2);
+  animation: enter 0.4s var(--ease) both;
+  transition: background-color 0.15s;
+}
+
+.own:hover {
+  background: #161618;
+}
+
+.own.soon {
+  color: var(--accent);
+  border-color: #3a2a1e;
+}
+
+.own.gone {
+  color: #7c7c85;
+  opacity: 0.5;
+}
+
+.own-shot {
+  width: 88px;
+  height: 60px;
+  flex: none;
+  background: #1a1a1d;
+  border-radius: 4px;
+}
+
+.own-name {
+  width: 250px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  color: var(--text);
+}
+
+.own-name span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.own-name b {
+  font-size: 15px;
+}
+
+.own-time {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.own-time > div:first-child {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.own-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.own-until {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.own-bar {
+  height: 4px;
+  background: #1e1e21;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.own-bar div {
+  height: 100%;
+  background: currentColor;
+  border-radius: 2px;
+  transform-origin: left;
+  animation: grow 0.8s var(--ease) both;
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.own-act {
+  width: 130px;
+  flex: none;
+  display: flex;
+  justify-content: flex-end;
+  color: var(--text);
+}
+
+.own-act .btn .mono {
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.od {
+  width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+}
+
+.od-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.od-head > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.od-head h1 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.od-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.od-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--panel-2);
+  border-radius: 8px;
+}
+
+.od-line > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.od-line span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.od-line .mono {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.od-receipt {
+  padding: 14px;
+}

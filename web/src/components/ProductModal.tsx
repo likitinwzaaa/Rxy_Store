@@ -9,7 +9,7 @@ type Props = {
   product: Product
   categoryName: string
   inCart: number
-  onAdd: (p: Product, qty: number) => void
+  onAdd: (p: Product, qty: number) => boolean | void
   onClose: () => void
 }
 
