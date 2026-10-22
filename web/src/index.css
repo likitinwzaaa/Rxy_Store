@@ -1,0 +1,91 @@
+:root {
+  --bg: #0c0c0d;
+  --panel: #121214;
+  --line: #222225;
+  --line-2: #2a2a2e;
+  --text: #f4f4f5;
+  --muted: #9a9aa3;
+  --accent: #ff7a1a;
+  --accent-2: #4c8dff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: transparent;
+  font-family: 'IBM Plex Sans Thai', sans-serif;
+  color: var(--text);
+  user-select: none;
+}
+
+body.browser {
+  background: #2b2d31;
+}
+
+#root {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+.shop {
+  width: 1120px;
+  height: 720px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.shop-head {
+  height: 60px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 0 16px 0 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.shop-name {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.shop-body {
+  flex: 1;
+  min-height: 0;
+}
+
+.icon-btn {
+  margin-left: auto;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--muted);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.icon-btn:hover {
+  background: #1c1c1f;
+  color: #fff;
+}
