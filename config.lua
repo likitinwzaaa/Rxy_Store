@@ -31,6 +31,8 @@ Config.Jobs = {
     ['ambulance'] = 'หมอ',
 }
 
+Config.BannedPlates = {}
+
 Config.ImageHosts = {
     'cdn.discordapp.com',
     'media.discordapp.net',

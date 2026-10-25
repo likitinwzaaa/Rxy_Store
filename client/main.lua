@@ -48,6 +48,18 @@ RegisterNUICallback('req', function(data, cb)
     end)
 end)
 
+RegisterNUICallback('checkModels', function(data, cb)
+    local bad = {}
+    if type(data) == 'table' and type(data.models) == 'table' then
+        for i, model in ipairs(data.models) do
+            if i > 20 then break end
+            local hash = type(model) == 'string' and joaat(model) or 0
+            if not IsModelInCdimage(hash) or not IsModelAVehicle(hash) then bad[#bad + 1] = tostring(model) end
+        end
+    end
+    cb({ bad = bad })
+end)
+
 RegisterCommand(Config.Command, function()
     setOpen(not isOpen)
 end, false)

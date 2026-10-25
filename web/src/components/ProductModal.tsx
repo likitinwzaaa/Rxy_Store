@@ -16,16 +16,14 @@ type Props = {
 const where: Record<Reward['kind'], string> = {
   item: 'กระเป๋า',
   vehicle: 'การาจ',
-  rank: 'ยศ',
-  points: 'พอยท์',
-  money: 'บัญชีธนาคาร',
-  command: 'ระบบ',
+  role: 'Discord',
+  money: 'เงินในเกม',
 }
 
 function amountText(r: Reward) {
   if (r.kind === 'vehicle') return r.amount + ' คัน'
-  if (r.kind === 'money' || r.kind === 'points') return r.amount.toLocaleString('en-US')
-  if (r.kind === 'rank') return ''
+  if (r.kind === 'money') return r.amount.toLocaleString('en-US')
+  if (r.kind === 'role') return ''
   return '×' + r.amount
 }
 

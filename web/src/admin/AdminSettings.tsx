@@ -1,89 +1,29 @@
 import { useState, type CSSProperties, type FormEvent } from 'react'
-import type { DiscountCode, GatewayId, LogKind, ServerStatus, ShopSettings } from '../types'
-import { Toggle } from '../components/Toggle'
+import type { AdminLoad, DiscountCode, Product } from '../types'
 import { Icon } from '../components/Icon'
 import { isHex, turn } from '../lib/theme'
 import { dateShort } from '../lib/format'
 import { CodeDialog } from './CodeDialog'
+import type { Run } from './AdminApp'
 
 type Props = {
-  settings: ShopSettings
-  codes: DiscountCode[]
-  status: ServerStatus
-  onSave: (next: ShopSettings) => void
-  onCodes: (list: DiscountCode[]) => void
-  onToast: (msg: string) => void
+  data: AdminLoad
+  products: Product[]
+  run: Run
+  onToast: (msg: string, tone?: 'warn') => void
 }
-
-type Test = 'idle' | 'busy' | 'ok' | 'fail'
 
 const primaries = ['#FF7A1A', '#FF4D6D', '#FFD23F', '#C6F432', '#3ECFB2', '#4C8DFF', '#B98CFF', '#FF6FD8']
 const pairs = [180, 150, 210, 120, 240]
 
-const gateways: { id: GatewayId; name: string; env: string }[] = [
-  { id: 'opn', name: 'Opn Payments', env: 'shop_opn_secret "skey_live_..."' },
-  { id: 'beam', name: 'Beam', env: 'shop_beam_secret "..."' },
+const hooks: { id: keyof AdminLoad['status']['webhooks']; name: string; note: string }[] = [
+  { id: 'finance', name: 'การเงิน', note: 'จ่ายเงิน คืนเงิน ซื้อเยอะผิดปกติ ใช้โค้ด QR หมดเวลา' },
+  { id: 'delivery', name: 'ส่งของ', note: 'ส่งไม่สำเร็จ ของหมดอายุ ดึงคืนไม่ได้' },
+  { id: 'admin', name: 'แอดมิน', note: 'แอดมินแก้ร้าน รายการรอแอดมิน' },
+  { id: 'daily', name: 'สรุปรายวัน', note: 'ยอดขายของแต่ละวัน' },
+  { id: 'error', name: 'error', note: 'error ของระบบ' },
+  { id: 'logbackup', name: 'backup log', note: 'ไฟล์ log ก่อนลบ' },
 ]
-
-const logs: { id: LogKind; name: string; note: string }[] = [
-  { id: 'paid', name: 'มีคนจ่ายเงิน', note: 'ชื่อ ยอด ของที่ซื้อ ซื้อให้ใคร เลขคำสั่งซื้อ' },
-  { id: 'fail', name: 'ส่งของไม่สำเร็จ', note: 'ของเข้ากล่องรับของแทน พร้อมเหตุผล' },
-  { id: 'admin', name: 'แอดมินแก้ร้าน', note: 'ใครแก้อะไร ก่อนกับหลัง' },
-  { id: 'daily', name: 'สรุปยอดรายวัน', note: 'ยอดขาย จำนวนคำสั่งซื้อ ของขายดี' },
-  { id: 'refund', name: 'คืนเงิน', note: 'ใครกด เหตุผล ดึงของคืนหรือไม่' },
-  { id: 'big', name: 'ซื้อเยอะผิดปกติ', note: 'ยอดเดียวเกินที่ตั้งไว้' },
-  { id: 'expire', name: 'ของหมดอายุ', note: 'ดึงอะไรคืนจากใคร สำเร็จไหม' },
-  { id: 'stock', name: 'ของใกล้หมด', note: 'เหลือไม่ถึง 10% ของสต็อก' },
-  { id: 'code', name: 'มีคนใช้โค้ดส่วนลด', note: 'โค้ด ลดไปเท่าไหร่' },
-  { id: 'expired', name: 'QR หมดเวลา / ยกเลิก', note: 'ไว้ดูว่าคนทิ้งตะกร้าบ่อยแค่ไหน' },
-]
-
-type Form = {
-  name: string
-  openKey: string
-  primary: string
-  secondary: string | null
-  gateway: GatewayId
-  qrMinutes: string
-  minAmount: string
-  logs: Record<LogKind, boolean>
-  dailyAt: string
-  bigOver: string
-  debug: boolean
-}
-
-type Errors = Partial<Record<'name' | 'openKey' | 'gateway' | 'qrMinutes' | 'minAmount' | 'dailyAt' | 'bigOver', string>>
-
-function toForm(s: ShopSettings): Form {
-  return {
-    name: s.name,
-    openKey: s.openKey,
-    primary: s.theme.primary,
-    secondary: s.theme.secondary,
-    gateway: s.gateway,
-    qrMinutes: String(s.qrMinutes),
-    minAmount: String(s.minAmount),
-    logs: { ...s.logs },
-    dailyAt: s.dailyAt,
-    bigOver: String(s.bigOver),
-    debug: s.debug,
-  }
-}
-
-function validate(f: Form, status: ServerStatus): Errors {
-  const e: Errors = {}
-  const num = (v: string) => (/^\d+$/.test(v.trim()) ? Number(v) : NaN)
-  if (!f.name.trim()) e.name = 'ต้องใส่ชื่อร้าน'
-  if (!/^(F([1-9]|1[0-2])|[A-Z0-9])$/.test(f.openKey)) e.openKey = 'ใช้ได้แค่ A-Z, 0-9 หรือ F1-F12'
-  if (!status.keys[f.gateway]) e.gateway = 'ยังไม่ได้ใส่คีย์ของช่องทางนี้ใน server.cfg'
-  const qr = num(f.qrMinutes)
-  if (!(qr >= 5 && qr <= 60)) e.qrMinutes = '5 ถึง 60 นาที'
-  const min = num(f.minAmount)
-  if (!(min >= 20)) e.minAmount = 'PromptPay ขั้นต่ำ 20 บาท'
-  if (f.logs.daily && !/^([01]\d|2[0-3]):[0-5]\d$/.test(f.dailyAt)) e.dailyAt = 'เวลาแบบ 23:59'
-  if (f.logs.big && !(num(f.bigOver) > 0)) e.bigOver = 'ต้องใส่ยอด'
-  return e
-}
 
 function offText(c: DiscountCode) {
   return c.kind === 'percent' ? `−${c.value}%` : `−฿${c.value.toLocaleString('en-US')}`
@@ -104,26 +44,32 @@ function untilText(c: DiscountCode, now: number) {
   return 'ไม่หมดอายุ'
 }
 
-export function AdminSettings({ settings, codes, status, onSave, onCodes, onToast }: Props) {
-  const [form, setForm] = useState<Form>(() => toForm(settings))
-  const [errors, setErrors] = useState<Errors>({})
+function Status({ on }: { on: boolean }) {
+  return on ? (
+    <span className="live">
+      <i className="pulse-dot" />
+      ตั้งแล้ว
+    </span>
+  ) : (
+    <span className="missing">ยังไม่ได้ตั้ง</span>
+  )
+}
+
+export function AdminSettings({ data, products, run, onToast }: Props) {
+  const locked = data.settings.locked
+  const [name, setName] = useState(data.settings.name)
+  const [primary, setPrimary] = useState(data.settings.theme?.primary ?? '#FF7A1A')
+  const [secondary, setSecondary] = useState<string | null>(data.settings.theme?.secondary ?? null)
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [p1Text, setP1Text] = useState<string | null>(null)
   const [p2Text, setP2Text] = useState<string | null>(null)
-  const [payTest, setPayTest] = useState<Test>('idle')
-  const [hookTest, setHookTest] = useState<Test>('idle')
   const [editing, setEditing] = useState<DiscountCode | 'new' | null>(null)
+  const [saving, setSaving] = useState(false)
 
   const now = Date.now()
-  const suggested = turn(form.primary, 180)
-  const p2 = form.secondary ?? suggested
-  const key = status.keys[form.gateway]
-  const gw = gateways.find((g) => g.id === form.gateway)!
-
-  function update(patch: Partial<Form>) {
-    const next = { ...form, ...patch }
-    setForm(next)
-    if (Object.keys(errors).length) setErrors(validate(next, status))
-  }
+  const suggested = turn(primary, 180)
+  const p2 = secondary ?? suggested
+  const status = data.status
 
   function hexInput(v: string, set: (hex: string) => void, keep: (t: string | null) => void) {
     let t = v.trim()
@@ -136,47 +82,24 @@ export function AdminSettings({ settings, codes, status, onSave, onCodes, onToas
     }
   }
 
-  function runTest(set: (t: Test) => void, ok: boolean) {
-    set('busy')
-    setTimeout(() => set(ok ? 'ok' : 'fail'), 900)
-  }
-
-  function submit(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault()
-    const errs = validate(form, status)
-    setErrors(errs)
-    if (Object.keys(errs).length) {
-      onToast('ยังบันทึกไม่ได้ เช็คช่องที่เป็นสีแดง')
+    if (saving) return
+    if (!locked.name && !name.trim()) {
+      setErrors({ name: 'ต้องใส่ชื่อร้าน' })
       return
     }
-    onSave({
-      name: form.name.trim(),
-      openKey: form.openKey,
-      theme: { primary: form.primary, secondary: form.secondary },
-      gateway: form.gateway,
-      qrMinutes: Number(form.qrMinutes),
-      minAmount: Number(form.minAmount),
-      logs: form.logs,
-      dailyAt: form.dailyAt,
-      bigOver: Number(form.bigOver),
-      debug: form.debug,
-    })
+    setSaving(true)
+    const d = await run('admin:settings:save', { name: name.trim(), theme: { primary, secondary } })
+    setSaving(false)
+    if (!d) return
+    if (d.errors) {
+      setErrors(d.errors)
+      return
+    }
+    setErrors({})
     onToast('บันทึกการตั้งค่าแล้ว')
   }
-
-  function saveCode(c: DiscountCode, old: string | null) {
-    onCodes(old ? codes.map((x) => (x.code === old ? c : x)) : [...codes, c])
-    setEditing(null)
-    onToast(old ? `บันทึกโค้ด ${c.code} แล้ว` : `เพิ่มโค้ด ${c.code} แล้ว`)
-  }
-
-  function removeCode(code: string) {
-    onCodes(codes.filter((x) => x.code !== code))
-    setEditing(null)
-    onToast(`ลบโค้ด ${code} แล้ว`)
-  }
-
-  const bad = (k: keyof Errors) => (errors[k] ? 'input bad' : 'input')
 
   return (
     <>
@@ -185,118 +108,111 @@ export function AdminSettings({ settings, codes, status, onSave, onCodes, onToas
           <h2>ร้าน</h2>
           <div className="set-shop">
             <div className="field-group">
-              <label htmlFor="s-name">ชื่อร้าน</label>
+              <label htmlFor="s-name">
+                ชื่อร้าน {locked.name && <span className="lock-tag">ตั้งใน config</span>}
+              </label>
               <input
                 id="s-name"
-                className={bad('name')}
-                value={form.name}
+                className={errors.name ? 'input bad' : 'input'}
+                value={name}
                 maxLength={24}
-                onChange={(e) => update({ name: e.target.value })}
+                disabled={locked.name}
+                onChange={(e) => setName(e.target.value)}
               />
               {errors.name && <span className="field-err">{errors.name}</span>}
             </div>
             <div className="field-group">
-              <label htmlFor="s-key">ปุ่มเปิดร้าน</label>
-              <input
-                id="s-key"
-                className={bad('openKey') + ' center mono'}
-                value={form.openKey}
-                maxLength={3}
-                onChange={(e) => update({ openKey: e.target.value.toUpperCase().replace(/\s/g, '') })}
-              />
-            </div>
-          </div>
-          {errors.openKey ? (
-            <span className="field-err">{errors.openKey}</span>
-          ) : (
-            form.openKey !== settings.openKey && (
-              <span className="box-note">คนที่เคยเข้าเซิร์ฟแล้วต้องเปลี่ยนปุ่มเองใน ตั้งค่า &gt; คีย์ลัด &gt; FiveM</span>
-            )
-          )}
-
-          <h2>ธีม</h2>
-          <div className="field-group">
-            <span className="set-label">สีหลัก · ราคา ป้ายลดราคา ตัวเลขบนตะกร้า</span>
-            <div className="swatches">
-              {primaries.map((hex) => (
-                <button
-                  key={hex}
-                  type="button"
-                  className={hex === form.primary ? 'sw on' : 'sw'}
-                  style={{ background: hex }}
-                  aria-label={`สีหลัก ${hex}`}
-                  onClick={() => {
-                    update({ primary: hex })
-                    setP1Text(null)
-                  }}
-                />
-              ))}
-              <label className="hex-field">
-                <i style={{ background: form.primary }} />
-                <input
-                  className="mono"
-                  value={p1Text ?? form.primary}
-                  maxLength={7}
-                  aria-label="ใส่รหัสสีหลักเอง"
-                  onChange={(e) => hexInput(e.target.value, (hex) => update({ primary: hex }), setP1Text)}
-                  onBlur={() => setP1Text(null)}
-                />
+              <label htmlFor="s-key">
+                ปุ่มเปิดร้าน <span className="lock-tag">ตั้งใน config</span>
               </label>
+              <input id="s-key" className="input center mono" value={data.settings.openKey} disabled />
             </div>
           </div>
 
-          <div className="field-group">
-            <div className="set-row">
-              <span className="set-label">สีรอง · ป้ายสต็อก สถานะ ส่วนลด</span>
-              {form.secondary && (
-                <button
-                  type="button"
-                  className="ulink muted small"
-                  onClick={() => {
-                    update({ secondary: null })
-                    setP2Text(null)
-                  }}
-                >
-                  กลับไปใช้สีแนะนำ
-                </button>
-              )}
-            </div>
-            <div className="swatches pairs">
-              {pairs.map((deg) => {
-                const hex = turn(form.primary, deg)
-                return (
+          <h2>ธีม {locked.theme && <span className="lock-tag">ตั้งใน config</span>}</h2>
+          <fieldset className="plain" disabled={locked.theme}>
+            <div className="field-group">
+              <span className="set-label">สีหลัก · ราคา ป้ายลดราคา ตัวเลขบนตะกร้า</span>
+              <div className="swatches">
+                {primaries.map((hex) => (
                   <button
-                    key={deg}
+                    key={hex}
                     type="button"
-                    className={hex === p2 ? 'sw on' : 'sw'}
+                    className={hex === primary ? 'sw on' : 'sw'}
                     style={{ background: hex }}
-                    aria-label={(deg === 180 ? 'สีแนะนำ ' : 'สีคู่ ') + hex}
+                    aria-label={`สีหลัก ${hex}`}
                     onClick={() => {
-                      update({ secondary: deg === 180 ? null : hex })
+                      setPrimary(hex)
+                      setP1Text(null)
+                    }}
+                  />
+                ))}
+                <label className="hex-field">
+                  <i style={{ background: primary }} />
+                  <input
+                    className="mono"
+                    value={p1Text ?? primary}
+                    maxLength={7}
+                    aria-label="ใส่รหัสสีหลักเอง"
+                    onChange={(e) => hexInput(e.target.value, setPrimary, setP1Text)}
+                    onBlur={() => setP1Text(null)}
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div className="field-group">
+              <div className="set-row">
+                <span className="set-label">สีรอง · ป้ายสต็อก สถานะ ส่วนลด</span>
+                {secondary && (
+                  <button
+                    type="button"
+                    className="ulink muted small"
+                    onClick={() => {
+                      setSecondary(null)
                       setP2Text(null)
                     }}
                   >
-                    {deg === 180 && <span className="sw-tag">แนะนำ</span>}
+                    กลับไปใช้สีแนะนำ
                   </button>
-                )
-              })}
-              <label className="hex-field">
-                <i style={{ background: p2 }} />
-                <input
-                  className="mono"
-                  value={p2Text ?? p2}
-                  maxLength={7}
-                  aria-label="ใส่รหัสสีรองเอง"
-                  onChange={(e) =>
-                    hexInput(e.target.value, (hex) => update({ secondary: hex === suggested ? null : hex }), setP2Text)
-                  }
-                  onBlur={() => setP2Text(null)}
-                />
-              </label>
+                )}
+              </div>
+              <div className="swatches pairs">
+                {pairs.map((deg) => {
+                  const hex = turn(primary, deg)
+                  return (
+                    <button
+                      key={deg}
+                      type="button"
+                      className={hex === p2 ? 'sw on' : 'sw'}
+                      style={{ background: hex }}
+                      aria-label={(deg === 180 ? 'สีแนะนำ ' : 'สีคู่ ') + hex}
+                      onClick={() => {
+                        setSecondary(deg === 180 ? null : hex)
+                        setP2Text(null)
+                      }}
+                    >
+                      {deg === 180 && <span className="sw-tag">แนะนำ</span>}
+                    </button>
+                  )
+                })}
+                <label className="hex-field">
+                  <i style={{ background: p2 }} />
+                  <input
+                    className="mono"
+                    value={p2Text ?? p2}
+                    maxLength={7}
+                    aria-label="ใส่รหัสสีรองเอง"
+                    onChange={(e) => hexInput(e.target.value, (hex) => setSecondary(hex === suggested ? null : hex), setP2Text)}
+                    onBlur={() => setP2Text(null)}
+                  />
+                </label>
+              </div>
             </div>
-          </div>
+            {errors.theme && <span className="field-err">{errors.theme}</span>}
+          </fieldset>
 
-          <div className="theme-preview" style={{ '--p1': form.primary, '--p2': p2 } as CSSProperties}>
+          <div className="theme-preview" style={{ '--p1': primary, '--p2': p2 } as CSSProperties}>
             <span className="set-label">ตัวอย่าง</span>
             <b className="mono">฿455</b>
             <span className="tp-tag one">ลด 30%</span>
@@ -315,7 +231,7 @@ export function AdminSettings({ settings, codes, status, onSave, onCodes, onToas
             </button>
           </div>
           <div className="code-list">
-            {codes.map((c, i) => {
+            {data.codes.map((c, i) => {
               const until = untilText(c, now)
               const dim = c.enabled === false || until === 'หมดอายุแล้ว' || until === 'ใช้ครบแล้ว'
               return (
@@ -333,163 +249,64 @@ export function AdminSettings({ settings, codes, status, onSave, onCodes, onToas
                 </button>
               )
             })}
-            {codes.length === 0 && <p className="box-note">ยังไม่มีโค้ด</p>}
+            {data.codes.length === 0 && <p className="box-note">ยังไม่มีโค้ด</p>}
           </div>
         </section>
 
         <section className="set-col">
-          <h2>ช่องทางรับเงิน</h2>
-          <div className="gw-list" role="radiogroup" aria-label="ช่องทางรับเงิน">
-            {gateways.map((g) => (
-              <label key={g.id} className={form.gateway === g.id ? 'gw on' : 'gw'}>
-                <input
-                  type="radio"
-                  name="gateway"
-                  checked={form.gateway === g.id}
-                  onChange={() => {
-                    update({ gateway: g.id })
-                    setPayTest('idle')
-                  }}
-                />
-                <span>
-                  <b>{g.name}</b>
-                  <small>PromptPay QR · ตรวจยอดอัตโนมัติ</small>
-                </span>
-                {!status.keys[g.id] && <em>ยังไม่ตั้งคีย์</em>}
-              </label>
-            ))}
+          <div className="set-row">
+            <h2>ช่องทางรับเงิน</h2>
+            <span className="lock-tag">ตั้งใน config</span>
           </div>
-
           <div className="set-card">
+            <div className="set-row">
+              <span className="set-key">ช่องทาง</span>
+              <Status on={false} />
+            </div>
             <div className="set-row">
               <span className="set-key">Secret key</span>
-              {key ? (
-                <span className="live">
-                  <i className="pulse-dot" />
-                  <span className="mono">{key}</span>
-                </span>
-              ) : (
-                <span className="missing">ยังไม่ได้ตั้ง</span>
-              )}
+              <Status on={false} />
             </div>
             <div className="set-row">
-              <span className="set-key">ทดสอบการเชื่อมต่อ</span>
-              <TestButton state={payTest} disabled={!key} onClick={() => runTest(setPayTest, true)} />
+              <span className="set-key">QR หมดอายุ</span>
+              <Status on={false} />
             </div>
-            {errors.gateway && <span className="field-err">{errors.gateway}</span>}
-            <span className="box-note">คีย์ตั้งใน server.cfg เท่านั้น หน้านี้โชว์ได้แค่สถานะ</span>
-            <code>set {gw.env}</code>
+            <div className="set-row">
+              <span className="set-key">ยอดขั้นต่ำ</span>
+              <Status on={false} />
+            </div>
+            <span className="box-note">ส่วนนี้จะใช้ได้ตอนต่อระบบจ่ายเงิน คีย์ตั้งใน server.cfg เท่านั้น หน้านี้โชว์ได้แค่สถานะ</span>
           </div>
 
-          <div className="two">
-            <div className="field-group">
-              <label htmlFor="s-qr">QR หมดอายุ (นาที)</label>
-              <input
-                id="s-qr"
-                className={bad('qrMinutes') + ' center mono'}
-                inputMode="numeric"
-                value={form.qrMinutes}
-                onChange={(e) => update({ qrMinutes: e.target.value.replace(/\D/g, '').slice(0, 2) })}
-              />
-              {errors.qrMinutes && <span className="field-err">{errors.qrMinutes}</span>}
-            </div>
-            <div className="field-group">
-              <label htmlFor="s-min">ยอดขั้นต่ำ (บาท)</label>
-              <input
-                id="s-min"
-                className={bad('minAmount') + ' center mono'}
-                inputMode="numeric"
-                value={form.minAmount}
-                onChange={(e) => update({ minAmount: e.target.value.replace(/\D/g, '').slice(0, 5) })}
-              />
-              {errors.minAmount && <span className="field-err">{errors.minAmount}</span>}
-            </div>
+          <div className="set-row set-gap">
+            <h2>Discord</h2>
+            <span className="lock-tag">ตั้งใน server.cfg</span>
           </div>
-
-          <h2>Discord log</h2>
           <div className="set-card">
             <div className="set-row">
-              <span className="set-key">Webhook</span>
-              {status.webhook ? (
-                <span className="live">
-                  <i className="pulse-dot" />
-                  เชื่อมแล้ว · {status.webhook}
-                </span>
-              ) : (
-                <span className="missing">ยังไม่ได้ตั้ง</span>
-              )}
+              <span className="set-key">บอท</span>
+              <Status on={status.bot} />
             </div>
             <div className="set-row">
-              <span className="set-key">ส่งข้อความทดสอบ</span>
-              <TestButton state={hookTest} disabled={!status.webhook} onClick={() => runTest(setHookTest, true)} />
+              <span className="set-key">เซิร์ฟ Discord (GuildId)</span>
+              <Status on={status.guild} />
             </div>
-            <code>set shop_discord_webhook "https://discord.com/api/webhooks/..."</code>
+            <div className="set-row">
+              <span className="set-key">โหมด debug</span>
+              <span>{status.debug ? 'debug' : 'off'}</span>
+            </div>
           </div>
 
           <div className="log-list">
-            {logs.map((l) => (
-              <div key={l.id} className="log-row">
+            {hooks.map((h) => (
+              <div key={h.id} className="log-row">
                 <span>
-                  <b>{l.name}</b>
-                  <small>{l.note}</small>
+                  <b>webhook {h.name}</b>
+                  <small>{h.note}</small>
                 </span>
-                {l.id === 'daily' && form.logs.daily && (
-                  <input
-                    className={bad('dailyAt') + ' mono tiny'}
-                    value={form.dailyAt}
-                    maxLength={5}
-                    aria-label="เวลาส่งสรุปยอด"
-                    onChange={(e) => update({ dailyAt: e.target.value })}
-                  />
-                )}
-                {l.id === 'big' && form.logs.big && (
-                  <span className="over">
-                    เกิน ฿
-                    <input
-                      className={bad('bigOver') + ' mono tiny'}
-                      inputMode="numeric"
-                      value={form.bigOver}
-                      aria-label="ยอดที่ถือว่าซื้อเยอะผิดปกติ"
-                      onChange={(e) => update({ bigOver: e.target.value.replace(/\D/g, '').slice(0, 6) })}
-                    />
-                  </span>
-                )}
-                <Toggle
-                  on={form.logs[l.id]}
-                  label={`ส่ง log ${l.name}`}
-                  onChange={(v) => update({ logs: { ...form.logs, [l.id]: v } })}
-                />
+                <Status on={status.webhooks[h.id]} />
               </div>
             ))}
-          </div>
-
-          <div className="field-group">
-            <span className="set-label">โหมด debug</span>
-            <div className="seg" role="radiogroup" aria-label="โหมด debug">
-              <button
-                type="button"
-                role="radio"
-                aria-checked={!form.debug}
-                className={form.debug ? '' : 'on'}
-                onClick={() => update({ debug: false })}
-              >
-                off
-              </button>
-              <button
-                type="button"
-                role="radio"
-                aria-checked={form.debug}
-                className={form.debug ? 'on' : ''}
-                onClick={() => update({ debug: true })}
-              >
-                debug
-              </button>
-            </div>
-            <span className="box-note">
-              {form.debug
-                ? 'ส่ง error ทุกอย่างเข้า Discord และพิมพ์ลง console ด้วย เปิดไว้ตอนหาบั๊กแล้วปิด'
-                : 'ไม่ส่ง error เข้า Discord ใช้ตอนเปิดร้านจริง'}
-            </span>
           </div>
         </section>
       </form>
@@ -497,31 +314,17 @@ export function AdminSettings({ settings, codes, status, onSave, onCodes, onToas
       {editing && (
         <CodeDialog
           code={editing === 'new' ? null : editing}
-          taken={codes.map((c) => c.code)}
-          onSave={saveCode}
-          onDelete={removeCode}
+          taken={data.codes.map((c) => c.code)}
+          categories={data.categories}
+          products={products}
+          run={run}
+          onDone={(msg) => {
+            setEditing(null)
+            onToast(msg)
+          }}
           onCancel={() => setEditing(null)}
         />
       )}
     </>
-  )
-}
-
-type TestProps = { state: Test; disabled: boolean; onClick: () => void }
-
-function TestButton({ state, disabled, onClick }: TestProps) {
-  return (
-    <span className="test">
-      {state === 'ok' && <span className="test-ok">ผ่าน</span>}
-      {state === 'fail' && <span className="test-fail">ไม่ผ่าน</span>}
-      <button
-        type="button"
-        className="btn btn-outline btn-sm pill"
-        disabled={disabled || state === 'busy'}
-        onClick={onClick}
-      >
-        {state === 'busy' ? 'กำลังทดสอบ' : 'ทดสอบ'}
-      </button>
-    </span>
   )
 }

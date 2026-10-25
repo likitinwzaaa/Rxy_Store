@@ -1,4 +1,6 @@
-export type RewardKind = 'item' | 'vehicle' | 'rank' | 'points' | 'money' | 'command'
+export type RewardKind = 'item' | 'money' | 'vehicle' | 'role'
+
+export type PlateMode = 'random' | 'fixed' | 'prefix'
 
 export type Reward = {
   kind: RewardKind
@@ -6,6 +8,8 @@ export type Reward = {
   value?: string
   amount: number
   days?: number | null
+  plateMode?: PlateMode
+  plate?: string | null
 }
 
 export type Product = {
@@ -243,7 +247,18 @@ export type Quote = {
   tier?: string | null
 }
 
+export type AdminStatus = {
+  bot: boolean
+  guild: boolean
+  debug: boolean
+  webhooks: Record<'finance' | 'delivery' | 'admin' | 'daily' | 'error' | 'logbackup', boolean>
+}
+
 export type AdminLoad = {
+  savedId?: string
+  errors?: Record<string, string>
+  roles: { id: string; name: string }[]
+  status: AdminStatus
   dev: boolean
   categories: Category[]
   products: ServerProduct[]

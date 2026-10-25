@@ -1,6 +1,8 @@
-import { useState } from 'react'
-import type { AdminOrder, AdminPage, Banner, Category, DiscountCode, Product, ShopSettings } from '../types'
-import { adminOrders, serverStatus, updateInfo } from '../mock/admin'
+import { useMemo, useState } from 'react'
+import type { AdminLoad, AdminOrder, AdminPage } from '../types'
+import { adminOrders, updateInfo } from '../mock/admin'
+import { call, errorText } from '../lib/api'
+import { toProduct } from '../lib/catalog'
 import { IconButton } from '../components/Button'
 import { AdminProducts } from './AdminProducts'
 import { AdminCategories } from './AdminCategories'
@@ -9,21 +11,12 @@ import { AdminBanners } from './AdminBanners'
 import { AdminSettings } from './AdminSettings'
 import { UpdateBar } from './UpdateBar'
 
+export type Run = (name: string, payload: object) => Promise<AdminLoad | null>
+
 type Props = {
-  settings: ShopSettings
-  codes: DiscountCode[]
-  onSettings: (next: ShopSettings) => void
-  onCodes: (list: DiscountCode[]) => void
-  products: Product[]
-  categories: Category[]
-  groups: { id: string; name: string }[]
-  onProducts: (list: Product[]) => void
-  onCategories: (list: Category[]) => void
-  banners: Banner[]
-  bannerSeconds: number
-  onBanners: (list: Banner[]) => void
-  onBannerSeconds: (n: number) => void
-  onToast: (msg: string) => void
+  data: AdminLoad
+  onData: (d: AdminLoad) => void
+  onToast: (msg: string, tone?: 'warn') => void
   onClose: () => void
 }
 
@@ -35,9 +28,9 @@ const tabs: { id: AdminPage; name: string }[] = [
   { id: 'settings', name: 'ตั้งค่าร้าน' },
 ]
 
-export function AdminApp(props: Props) {
-  const { settings, codes, onSettings, onCodes, products, categories, groups, onProducts, onCategories, onToast, onClose } = props
-  const { banners, bannerSeconds, onBanners, onBannerSeconds } = props
+const reloadOn = new Set(['conflict', 'stock_changed'])
+
+export function AdminApp({ data, onData, onToast, onClose }: Props) {
   const [page, setPage] = useState<AdminPage>('products')
   const [orders, setOrders] = useState<AdminOrder[]>(adminOrders)
   const [skipped, setSkipped] = useState<string | null>(null)
@@ -45,10 +38,26 @@ export function AdminApp(props: Props) {
   const update = updateInfo
   const showUpdate = update.security || (!hidden && skipped !== update.latest)
 
+  const products = useMemo(() => data.products.map((p) => toProduct(p, {}, {}, true)), [data.products])
+
+  const run: Run = async (name, payload) => {
+    const res = await call<AdminLoad>(name, payload)
+    if (!res.ok) {
+      onToast(errorText(res.error), 'warn')
+      if (reloadOn.has(res.error)) {
+        const fresh = await call<AdminLoad>('admin:load')
+        if (fresh.ok) onData(fresh.data)
+      }
+      return null
+    }
+    if (!res.data.errors) onData(res.data)
+    return res.data
+  }
+
   return (
     <>
       <header className="shop-head adm-head">
-        <span className="adm-name">{settings.name}</span>
+        <span className="adm-name">{data.settings.name}</span>
         <span className="adm-pill">แอดมิน</span>
         <nav className="adm-tabs" aria-label="เมนูแอดมิน">
           {tabs.map((t) => (
@@ -78,46 +87,30 @@ export function AdminApp(props: Props) {
           info={update}
           onSkip={() => {
             setSkipped(update.latest)
-            onToast(`ข้าม v${update.latest} แล้ว จะเตือนอีกทีตอนมีเวอร์ชันถัดไป`)
+            onToast('ข้ามเวอร์ชันนี้แล้ว จะเตือนอีกทีตอนมีเวอร์ชันถัดไป')
           }}
           onHide={() => setHidden(true)}
         />
       )}
 
       {page === 'products' && (
-        <AdminProducts products={products} categories={categories} onChange={onProducts} onSaved={onToast} />
+        <AdminProducts products={products} categories={data.categories} roles={data.roles} run={run} onToast={onToast} />
       )}
       {page === 'categories' && (
-        <AdminCategories
-          categories={categories}
-          products={products}
-          groups={groups}
-          onChange={onCategories}
-          onSaved={onToast}
-        />
+        <AdminCategories categories={data.categories} products={products} groups={data.groups} run={run} onToast={onToast} />
       )}
       {page === 'orders' && <AdminOrders orders={orders} onChange={setOrders} onToast={onToast} />}
       {page === 'banners' && (
         <AdminBanners
-          banners={banners}
-          seconds={bannerSeconds}
+          banners={data.banners}
+          seconds={data.settings.bannerSeconds}
           products={products}
-          categories={categories}
-          onChange={onBanners}
-          onSeconds={onBannerSeconds}
-          onSaved={onToast}
-        />
-      )}
-      {page === 'settings' && (
-        <AdminSettings
-          settings={settings}
-          codes={codes}
-          status={serverStatus}
-          onSave={onSettings}
-          onCodes={onCodes}
+          categories={data.categories}
+          run={run}
           onToast={onToast}
         />
       )}
+      {page === 'settings' && <AdminSettings data={data} products={products} run={run} onToast={onToast} />}
     </>
   )
 }

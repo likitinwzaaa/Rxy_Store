@@ -9,13 +9,13 @@ function Log.write(level, source, message, data)
 
     if not DB.ready then return end
 
-    MySQL.insert(DB.sql('INSERT INTO {logs} (at, level, source, message, data) VALUES (?, ?, ?, ?, ?)'), {
+    MySQL.insert(DB.bind(DB.sql('INSERT INTO {logs} (at, level, source, message, data) VALUES (?, ?, ?, ?, ?)'), {
         DB.now(),
         level,
         source,
         message,
         data and json.encode(data) or nil,
-    })
+    }))
 end
 
 function Log.info(source, message, data)

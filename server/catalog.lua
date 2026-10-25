@@ -13,10 +13,10 @@ local function num(value)
 end
 
 local function loadCategories()
-    local rows = MySQL.query.await(DB.sql([[
+    local rows = DB.query([[
         SELECT id, name, icon, sort, enabled, jobs, discord_roles, hide_empty, rev
         FROM {categories} WHERE deleted_at IS NULL ORDER BY sort, id
-    ]])) or {}
+    ]]) or {}
     local list = {}
     for _, r in ipairs(rows) do
         list[#list + 1] = {
@@ -35,11 +35,11 @@ local function loadCategories()
 end
 
 local function loadProducts()
-    local rows = MySQL.query.await(DB.sql([[
+    local rows = DB.query([[
         SELECT id, category_id, name, description, image, price, sale_price, ]] .. DB.time('sale_ends_at') .. [[,
             stock, limit_count, limit_period, rewards, hide_when_blocked, enabled, sort, featured, ]] .. DB.time('starts_at') .. [[, rev
         FROM {products} WHERE deleted_at IS NULL ORDER BY sort, id
-    ]])) or {}
+    ]]) or {}
     local list = {}
     for _, r in ipairs(rows) do
         list[#list + 1] = {
@@ -67,11 +67,11 @@ local function loadProducts()
 end
 
 local function loadBanners()
-    local rows = MySQL.query.await(DB.sql([[
+    local rows = DB.query([[
         SELECT id, label, image, link_kind, link_id, ]] .. DB.time('starts_at') .. ', ' .. DB.time('ends_at') .. [[,
             enabled, sort, rev
         FROM {banners} ORDER BY sort, id
-    ]])) or {}
+    ]]) or {}
     local list = {}
     for _, r in ipairs(rows) do
         list[#list + 1] = {
@@ -90,11 +90,11 @@ local function loadBanners()
 end
 
 local function loadCodes()
-    local rows = MySQL.query.await(DB.sql([[
+    local rows = DB.query([[
         SELECT code, kind, value, limit_total, per_player, used, ]] .. DB.time('starts_at') .. ', ' .. DB.time('ends_at') .. [[,
             enabled, allow_on_sale, min_total, max_off, only_categories, only_products, rev
         FROM {codes} WHERE deleted_at IS NULL ORDER BY created_at
-    ]])) or {}
+    ]]) or {}
     local map = {}
     for _, r in ipairs(rows) do
         map[r.code] = {
@@ -119,10 +119,10 @@ local function loadCodes()
 end
 
 local function loadTiers()
-    local rows = MySQL.query.await(DB.sql([[
+    local rows = DB.query([[
         SELECT id, name, min_total, discount_pct, rewards, reward_days, stack_with_code, enabled, sort, rev
         FROM {tiers} ORDER BY min_total
-    ]])) or {}
+    ]]) or {}
     local list = {}
     for _, r in ipairs(rows) do
         list[#list + 1] = {
@@ -262,7 +262,7 @@ local function periodStart(period)
 end
 
 function Catalog.bought(playerId)
-    local rows = MySQL.query.await(DB.sql([[
+    local rows = DB.query([[
         SELECT l.product_id,
             SUM(l.qty) AS ever,
             SUM(CASE WHEN o.paid_at >= ? THEN l.qty ELSE 0 END) AS day,
@@ -275,7 +275,7 @@ function Catalog.bought(playerId)
             SELECT id, paid_at FROM {orders} WHERE recipient_id = ? AND status = 'paid'
         ) o ON o.id = l.order_id
         GROUP BY l.product_id
-    ]]), { periodStart('day'), periodStart('week'), periodStart('month'), playerId, playerId }) or {}
+    ]], { periodStart('day'), periodStart('week'), periodStart('month'), playerId, playerId }) or {}
 
     local map = {}
     for _, r in ipairs(rows) do

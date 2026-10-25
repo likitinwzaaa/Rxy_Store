@@ -4,7 +4,7 @@ import { Toggle } from '../components/Toggle'
 import { Icon } from '../components/Icon'
 import { CategoryIcon, categoryIcons } from '../components/CategoryIcon'
 import { ConfirmDialog } from '../components/ConfirmDialog'
-import { slug } from './productForm'
+import type { Run } from './AdminApp'
 
 type Group = { id: string; name: string }
 
@@ -12,8 +12,8 @@ type Props = {
   categories: Category[]
   products: Product[]
   groups: Group[]
-  onChange: (list: Category[]) => void
-  onSaved: (msg: string) => void
+  run: Run
+  onToast: (msg: string, tone?: 'warn') => void
 }
 
 type Form = {
@@ -36,12 +36,13 @@ function toForm(c: Category | null): Form {
   }
 }
 
-export function AdminCategories({ categories, products, groups, onChange, onSaved }: Props) {
+export function AdminCategories({ categories, products, groups, run, onToast }: Props) {
   const [selected, setSelected] = useState<string | null>(categories[0]?.id ?? null)
   const [form, setForm] = useState<Form>(() => toForm(categories[0] ?? null))
   const [error, setError] = useState<string | null>(null)
   const [dragId, setDragId] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   const count = (id: string) => products.filter((p) => p.category === id).length
   const groupName = (id: string) => groups.find((g) => g.id === id)?.name ?? id
@@ -58,7 +59,8 @@ export function AdminCategories({ categories, products, groups, onChange, onSave
     setError(null)
   }
 
-  function save() {
+  async function save() {
+    if (saving) return
     if (!form.name.trim()) {
       setError('ต้องใส่ชื่อหมวด')
       return
@@ -68,34 +70,40 @@ export function AdminCategories({ categories, products, groups, onChange, onSave
       return
     }
     const old = categories.find((c) => c.id === selected)
-    const saved: Category = {
-      ...(old ?? {}),
-      id:
-        old?.id ??
-        slug(
-          form.name,
-          categories.map((c) => c.id),
-        ),
+    setSaving(true)
+    const d = await run('admin:category:save', {
+      id: old?.id,
+      rev: old?.rev,
       name: form.name.trim(),
       icon: form.icon,
-      groups: form.some ? form.groups : null,
+      groups: form.some ? form.groups : [],
       hideEmpty: form.hideEmpty,
-      enabled: old?.enabled ?? true,
+    })
+    setSaving(false)
+    if (!d) return
+    if (d.errors) {
+      setError(Object.values(d.errors)[0] ?? 'บันทึกไม่ได้')
+      return
     }
-    onChange(old ? categories.map((c) => (c.id === old.id ? saved : c)) : [...categories, saved])
-    setSelected(saved.id)
+    const id = d.savedId ?? old?.id ?? null
+    const fresh = d.categories.find((c) => c.id === id)
+    setSelected(id)
+    if (fresh) setForm(toForm(fresh))
     setError(null)
-    onSaved(old ? 'บันทึกหมวดแล้ว' : 'เพิ่มหมวดแล้ว')
+    onToast(old ? 'บันทึกหมวดแล้ว' : 'เพิ่มหมวดแล้ว')
   }
 
-  function remove() {
-    onChange(categories.filter((c) => c.id !== selected))
+  async function remove() {
+    const old = categories.find((c) => c.id === selected)
     setConfirmDelete(false)
-    onSaved('ลบหมวดแล้ว')
+    if (!old) return
+    const d = await run('admin:category:delete', { id: old.id, rev: old.rev })
+    if (!d) return
+    onToast('ลบหมวดแล้ว')
     addNew()
   }
 
-  function onDrop(e: DragEvent, target: string) {
+  async function onDrop(e: DragEvent, target: string) {
     e.preventDefault()
     if (!dragId || dragId === target) return
     const next = categories.filter((c) => c.id !== dragId)
@@ -104,8 +112,8 @@ export function AdminCategories({ categories, products, groups, onChange, onSave
       0,
       categories.find((c) => c.id === dragId)!,
     )
-    onChange(next)
     setDragId(null)
+    await run('admin:category:sort', { ids: next.map((c) => c.id) })
   }
 
   const inUse = selected ? count(selected) : 0
@@ -167,7 +175,7 @@ export function AdminCategories({ categories, products, groups, onChange, onSave
                   <Toggle
                     on={on}
                     label={`เปิดหมวด ${c.name}`}
-                    onChange={(v) => onChange(categories.map((x) => (x.id === c.id ? { ...x, enabled: v } : x)))}
+                    onChange={(v) => run('admin:category:toggle', { id: c.id, enabled: v })}
                   />
                 </span>
               </div>
@@ -242,7 +250,9 @@ export function AdminCategories({ categories, products, groups, onChange, onSave
                 })}
               </div>
             )}
-            <span className="box-note">กลุ่มดึงมาจาก job หรือ group ของ framework ตั้งชื่อเพิ่มได้ใน config</span>
+            <span className="box-note">
+              {groups.length === 0 ? 'ยังไม่ได้ตั้งกลุ่มใน config' : 'รายชื่อกลุ่มตั้งใน config'}
+            </span>
           </div>
 
           <label className="check">
@@ -258,8 +268,8 @@ export function AdminCategories({ categories, products, groups, onChange, onSave
             </button>
           )}
           <span className="form-msg">{error}</span>
-          <button type="button" className="btn btn-solid btn-md save-btn" onClick={save}>
-            บันทึก
+          <button type="button" className="btn btn-solid btn-md save-btn" disabled={saving} onClick={save}>
+            {saving ? 'กำลังบันทึก' : 'บันทึก'}
           </button>
         </div>
       </aside>

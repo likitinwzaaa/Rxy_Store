@@ -70,3 +70,36 @@ function DB.json(value, fallback)
     if ok and data ~= nil then return data end
     return fallback
 end
+
+function DB.bind(query, params)
+    params = params or {}
+    local args, i = {}, 0
+    local out = query:gsub('%?', function()
+        i = i + 1
+        local value = params[i]
+        if value == nil then return 'NULL' end
+        args[#args + 1] = value
+        return '?'
+    end)
+    return out, args
+end
+
+function DB.query(query, params)
+    return MySQL.query.await(DB.bind(DB.sql(query), params))
+end
+
+function DB.single(query, params)
+    return MySQL.single.await(DB.bind(DB.sql(query), params))
+end
+
+function DB.scalar(query, params)
+    return MySQL.scalar.await(DB.bind(DB.sql(query), params))
+end
+
+function DB.insert(query, params)
+    return MySQL.insert.await(DB.bind(DB.sql(query), params))
+end
+
+function DB.update(query, params)
+    return MySQL.update.await(DB.bind(DB.sql(query), params))
+end

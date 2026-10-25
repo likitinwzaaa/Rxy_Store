@@ -49,8 +49,8 @@ local function checkCode(code, player, eligible, subtotal, now)
     if eligible <= 0 then return nil, 'โค้ดนี้ใช้กับของในตะกร้าไม่ได้' end
 
     if code.perPlayer then
-        local used = MySQL.scalar.await(
-            DB.sql("SELECT COUNT(*) FROM {orders} WHERE player_id = ? AND code = ? AND status = 'paid'"),
+        local used = DB.scalar(
+            "SELECT COUNT(*) FROM {orders} WHERE player_id = ? AND code = ? AND status = 'paid'",
             { player.id, code.code }
         )
         if (tonumber(used) or 0) > 0 then return nil, 'คุณใช้โค้ดนี้ไปแล้ว' end

@@ -1095,3 +1095,35 @@
   height: 100%;
   object-fit: cover;
 }
+
+.rw-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rw-plate {
+  display: grid;
+  grid-template-columns: 84px 140px minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+  padding-bottom: 4px;
+  font-size: 11px;
+  color: #7c7c85;
+  animation: enter 0.3s var(--ease) both;
+}
+
+.rw-plate .input {
+  height: 32px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.limit-row {
+  display: grid;
+  grid-template-columns: 90px auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-2);
+}

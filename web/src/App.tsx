@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type {
   AdminLoad,
-  Banner,
   CartLine,
-  Category,
-  DiscountCode,
   InboxItem,
   Notice,
   Order,
@@ -47,12 +44,8 @@ export default function App() {
   const [load, setLoad] = useState<{ busy: boolean; slow?: boolean; error?: string | null }>({ busy: false })
   const [playerName, setPlayerName] = useState('')
   const [adminData, setAdminData] = useState<AdminLoad | null>(null)
-  const [aProducts, setAProducts] = useState<Product[]>([])
-  const [aCats, setACats] = useState<Category[]>([])
-  const [aBanners, setABanners] = useState<Banner[]>([])
   const [bannerSeconds, setBannerSeconds] = useState(5)
   const [settings, setSettings] = useState<ShopSettings>(shopSettings)
-  const [codes, setCodes] = useState<DiscountCode[]>([])
   const [page, setPage] = useState<Page>('home')
   const [cart, setCart] = useState<CartLine[]>([])
   const [code, setCode] = useState<string | null>(null)
@@ -141,16 +134,16 @@ export default function App() {
       setLoad({ busy: false, error: errorText(res.error) })
       return
     }
-    const d = res.data
-    setAdminData(d)
-    setAProducts(d.products.map((p) => toProduct(p, {}, {}, true)))
-    setACats(d.categories)
-    setABanners(d.banners)
-    setCodes(d.codes)
-    setImageHosts(d.imageHosts)
-    applySettings(d.settings)
+    applyAdmin(res.data)
     setLoad({ busy: false })
   }, [applySettings])
+
+  function applyAdmin(d: AdminLoad) {
+    setAdminData(d)
+    setImageHosts(d.imageHosts)
+    applySettings(d.settings)
+    cacheRef.current = null
+  }
 
   const reload = useCallback(() => (admin ? loadAdmin() : loadShop()), [admin, loadAdmin, loadShop])
 
@@ -208,10 +201,6 @@ export default function App() {
     fetchNui('close')
   }
 
-  function saveSettings(next: ShopSettings) {
-    setSettings(next)
-    applyTheme(next.theme)
-  }
 
   function closeLoad() {
     setLoad({ busy: false })
@@ -387,23 +376,14 @@ export default function App() {
   if (admin) {
     return (
       <div className="shop">
-        <AdminApp
-          settings={settings}
-          codes={codes}
-          onSettings={saveSettings}
-          onCodes={setCodes}
-          products={aProducts}
-          categories={aCats}
-          groups={adminData?.groups ?? []}
-          onProducts={setAProducts}
-          onCategories={setACats}
-          banners={aBanners}
-          bannerSeconds={bannerSeconds}
-          onBanners={setABanners}
-          onBannerSeconds={setBannerSeconds}
-          onToast={(title) => setToast({ key: Date.now(), title })}
-          onClose={close}
-        />
+        {adminData && (
+          <AdminApp
+            data={adminData}
+            onData={applyAdmin}
+            onToast={(title, tone) => setToast({ key: Date.now(), title, tone })}
+            onClose={close}
+          />
+        )}
         <Toast toast={toast} onDone={hideToast} />
       </div>
     )

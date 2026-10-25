@@ -15,10 +15,18 @@ local fromConfig = {
 
 function Settings.load()
     stored = {}
-    local rows = MySQL.query.await(DB.sql('SELECT k, v FROM {settings}')) or {}
+    local rows = DB.query('SELECT k, v FROM {settings}') or {}
     for _, row in ipairs(rows) do
         stored[row.k] = DB.json(row.v, nil)
     end
+end
+
+function Settings.save(key, value, by)
+    DB.query(
+        'INSERT INTO {settings} (k, v, updated_at, updated_by) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE v = VALUES(v), updated_at = VALUES(updated_at), updated_by = VALUES(updated_by)',
+        { key, json.encode(value), DB.now(), by }
+    )
+    stored[key] = value
 end
 
 function Settings.get(key)

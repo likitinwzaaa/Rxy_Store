@@ -23,6 +23,8 @@ server_scripts {
     'server/catalog.lua',
     'server/pricing.lua',
     'server/shop.lua',
+    'server/plates.lua',
+    'server/admin.lua',
     'server/version.lua',
 }
 

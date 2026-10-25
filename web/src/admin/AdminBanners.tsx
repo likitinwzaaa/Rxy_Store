@@ -3,8 +3,9 @@ import type { Banner, BannerLink, Category, Product } from '../types'
 import { Toggle } from '../components/Toggle'
 import { Icon } from '../components/Icon'
 import { DateTimeField } from '../components/DateTimeField'
+import type { Run } from './AdminApp'
 import { ConfirmDialog } from '../components/ConfirmDialog'
-import { safeImage } from '../lib/product'
+import { imageAllowed, safeImage } from '../lib/product'
 import { dateShort } from '../lib/format'
 import { bannerLook, bannerState, fromLocalInput, toLocalInput } from '../lib/banner'
 
@@ -13,9 +14,8 @@ type Props = {
   seconds: number
   products: Product[]
   categories: Category[]
-  onChange: (list: Banner[]) => void
-  onSeconds: (n: number) => void
-  onSaved: (msg: string) => void
+  run: Run
+  onToast: (msg: string, tone?: 'warn') => void
 }
 
 type Form = {
@@ -44,7 +44,7 @@ function validate(f: Form): Errors {
   const e: Errors = {}
   const img = f.image.trim()
   if (!img) e.image = 'ต้องใส่ลิงก์รูป'
-  else if (!/^https:\/\/[^\s"'()<>]+$/i.test(img)) e.image = 'ลิงก์รูปต้องขึ้นต้นด้วย https://'
+  else if (!imageAllowed(img)) e.image = 'ใช้รูปจากเว็บนี้ไม่ได้'
   if (!f.label.trim()) e.label = 'ต้องใส่ชื่อ'
   if (f.kind !== 'none' && !f.target) e.target = f.kind === 'product' ? 'เลือกสินค้า' : 'เลือกหมวด'
   const start = fromLocalInput(f.start)
@@ -64,7 +64,8 @@ function hideBroken(e: SyntheticEvent<HTMLImageElement>) {
   e.currentTarget.style.visibility = 'hidden'
 }
 
-export function AdminBanners({ banners, seconds, products, categories, onChange, onSeconds, onSaved }: Props) {
+export function AdminBanners({ banners, seconds, products, categories, run, onToast }: Props) {
+  const [saving, setSaving] = useState(false)
   const [selected, setSelected] = useState<string | null>(banners[0]?.id ?? null)
   const [form, setForm] = useState<Form>(() => toForm(banners[0] ?? null))
   const [errors, setErrors] = useState<Errors>({})
@@ -99,49 +100,56 @@ export function AdminBanners({ banners, seconds, products, categories, onChange,
     setErrors({})
   }
 
-  function save() {
+  async function save() {
+    if (saving) return
     const e = validate(form)
     setErrors(e)
     if (Object.keys(e).length) return
     const old = banners.find((b) => b.id === selected)
-    let id = old?.id
-    if (!id) {
-      let n = banners.length + 1
-      while (banners.some((b) => b.id === 'b' + n)) n++
-      id = 'b' + n
-    }
     const link: BannerLink = form.kind === 'none' ? { kind: 'none' } : { kind: form.kind, id: form.target }
-    const saved: Banner = {
-      id,
+    setSaving(true)
+    const d = await run('admin:banner:save', {
+      id: old?.id,
+      rev: old?.rev,
       image: form.image.trim(),
       label: form.label.trim(),
       link,
       startsAt: fromLocalInput(form.start),
       endsAt: fromLocalInput(form.end),
-      enabled: old?.enabled ?? true,
+    })
+    setSaving(false)
+    if (!d) return
+    if (d.errors) {
+      setErrors(d.errors as Errors)
+      return
     }
-    onChange(old ? banners.map((b) => (b.id === old.id ? saved : b)) : [...banners, saved])
-    setSelected(saved.id)
-    onSaved(old ? 'บันทึกแบนเนอร์แล้ว' : 'เพิ่มแบนเนอร์แล้ว')
+    const id = d.savedId ?? old?.id ?? null
+    const fresh = d.banners.find((b) => b.id === id)
+    setSelected(id)
+    if (fresh) setForm(toForm(fresh))
+    onToast(old ? 'บันทึกแบนเนอร์แล้ว' : 'เพิ่มแบนเนอร์แล้ว')
   }
 
-  function remove() {
-    onChange(banners.filter((b) => b.id !== selected))
+  async function remove() {
+    const old = banners.find((b) => b.id === selected)
     setConfirmDelete(false)
-    onSaved('ลบแบนเนอร์แล้ว')
+    if (!old) return
+    const d = await run('admin:banner:delete', { id: old.id, rev: old.rev })
+    if (!d) return
+    onToast('ลบแบนเนอร์แล้ว')
     addNew()
   }
 
-  function commitSeconds() {
+  async function commitSeconds() {
     const n = Math.min(30, Math.max(2, Math.round(Number(sec)) || seconds))
     setSec(String(n))
-    if (n !== seconds) {
-      onSeconds(n)
-      onSaved(`เปลี่ยนรูปทุก ${n} วินาที`)
-    }
+    if (n === seconds) return
+    const d = await run('admin:banner:seconds', { seconds: n })
+    if (d) onToast(`เปลี่ยนรูปทุก ${n} วินาที`)
+    else setSec(String(seconds))
   }
 
-  function onDrop(e: DragEvent, target: string) {
+  async function onDrop(e: DragEvent, target: string) {
     e.preventDefault()
     if (!dragId || dragId === target) return
     const next = banners.filter((b) => b.id !== dragId)
@@ -150,8 +158,8 @@ export function AdminBanners({ banners, seconds, products, categories, onChange,
       0,
       banners.find((b) => b.id === dragId)!,
     )
-    onChange(next)
     setDragId(null)
+    await run('admin:banner:sort', { ids: next.map((b) => b.id) })
   }
 
   const bad = (k: keyof Errors) => (errors[k] ? 'input bad' : 'input')
@@ -219,7 +227,7 @@ export function AdminBanners({ banners, seconds, products, categories, onChange,
                   <Toggle
                     on={b.enabled !== false}
                     label={`เปิดแบนเนอร์ ${b.label}`}
-                    onChange={(v) => onChange(banners.map((x) => (x.id === b.id ? { ...x, enabled: v } : x)))}
+                    onChange={(v) => run('admin:banner:toggle', { id: b.id, enabled: v })}
                   />
                 </span>
               </div>
@@ -345,8 +353,8 @@ export function AdminBanners({ banners, seconds, products, categories, onChange,
             </button>
           )}
           <span className="form-msg">{Object.keys(errors).length ? 'ยังกรอกไม่ครบ' : ''}</span>
-          <button type="button" className="btn btn-solid btn-md save-btn" onClick={save}>
-            บันทึก
+          <button type="button" className="btn btn-solid btn-md save-btn" disabled={saving} onClick={save}>
+            {saving ? 'กำลังบันทึก' : 'บันทึก'}
           </button>
         </div>
       </aside>

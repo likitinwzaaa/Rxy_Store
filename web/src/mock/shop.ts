@@ -74,7 +74,7 @@ export const products: Product[] = [
     category: 'vip',
     price: 199,
     featured: true,
-    rewards: [{ kind: 'rank', label: 'VIP Gold', value: 'vip_gold', amount: 1, days: 30 }],
+    rewards: [{ kind: 'role', label: 'VIP Gold', value: 'vip_gold', amount: 1, days: 30 }],
   },
   {
     id: 'points_1000',
@@ -82,7 +82,7 @@ export const products: Product[] = [
     category: 'points',
     price: 100,
     featured: true,
-    rewards: [{ kind: 'points', label: 'พอยท์', amount: 1000 }],
+    rewards: [{ kind: 'money', label: 'เงินในธนาคาร', value: 'bank', amount: 100000 }],
   },
   {
     id: 'starter_pack',
@@ -167,7 +167,7 @@ export const products: Product[] = [
     name: 'VIP Silver 7 วัน',
     category: 'vip',
     price: 59,
-    rewards: [{ kind: 'rank', label: 'VIP Silver', amount: 1, days: 7 }],
+    rewards: [{ kind: 'role', label: 'VIP Silver', value: 'vip_silver', amount: 1, days: 7 }],
   },
   {
     id: 'points_5000',
@@ -175,7 +175,7 @@ export const products: Product[] = [
     category: 'points',
     price: 450,
     oldPrice: 500,
-    rewards: [{ kind: 'points', label: 'พอยท์', amount: 5000 }],
+    rewards: [{ kind: 'money', label: 'เงินในธนาคาร', value: 'bank', amount: 500000 }],
   },
 ]
 

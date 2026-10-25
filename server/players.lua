@@ -26,24 +26,33 @@ local function load(src)
     local ip = ids.ip and ids.ip:gsub('^ip:', '') or nil
     local name = Bridge.name(src)
     local now = DB.now()
-    local row = MySQL.single.await(
-        DB.sql('SELECT id, discord, steam, fivem, xbl, live, total_topup FROM {players} WHERE license = ?'),
+    local row = DB.single(
+        'SELECT id, discord, steam, fivem, xbl, live, total_topup FROM {players} WHERE license = ?',
         { ids.license }
     )
 
     local mismatch = false
     if row then
+        local fill = {}
         for _, key in ipairs(KEYS) do
             if row[key] and ids[key] and row[key] ~= ids[key] then mismatch = true end
+            if not row[key] and ids[key] then fill[#fill + 1] = key end
         end
-        MySQL.update.await(
-            DB.sql('UPDATE {players} SET ip = ?, name = ?, last_seen = ? WHERE id = ?'),
-            { ip, name, now, row.id }
-        )
+
+        local sets, values = { 'ip = ?', 'name = ?', 'last_seen = ?' }, { ip, name, now }
+        if not mismatch then
+            for _, key in ipairs(fill) do
+                sets[#sets + 1] = key .. ' = ?'
+                values[#values + 1] = ids[key]
+                row[key] = ids[key]
+            end
+        end
+        values[#values + 1] = row.id
+        DB.update('UPDATE {players} SET ' .. table.concat(sets, ', ') .. ' WHERE id = ?', values)
     else
-        local id = MySQL.insert.await(
-            DB.sql([[INSERT INTO {players} (license, discord, steam, fivem, xbl, live, ip, name, first_seen, last_seen)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]]),
+        local id = DB.insert(
+            [[INSERT INTO {players} (license, discord, steam, fivem, xbl, live, ip, name, first_seen, last_seen)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]],
             { ids.license, ids.discord, ids.steam, ids.fivem, ids.xbl, ids.live, ip, name, now, now }
         )
         row = { id = id, discord = ids.discord, total_topup = 0 }
