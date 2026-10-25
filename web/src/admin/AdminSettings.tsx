@@ -54,7 +54,6 @@ type Form = {
 
 type Errors = Partial<Record<'name' | 'openKey' | 'gateway' | 'qrMinutes' | 'minAmount' | 'dailyAt' | 'bigOver', string>>
 
-// แปลงค่าตั้งค่าเป็นค่าในฟอร์ม
 function toForm(s: ShopSettings): Form {
   return {
     name: s.name,
@@ -71,7 +70,6 @@ function toForm(s: ShopSettings): Form {
   }
 }
 
-// ตรวจค่าในฟอร์มตั้งค่า
 function validate(f: Form, status: ServerStatus): Errors {
   const e: Errors = {}
   const num = (v: string) => (/^\d+$/.test(v.trim()) ? Number(v) : NaN)
@@ -87,19 +85,16 @@ function validate(f: Form, status: ServerStatus): Errors {
   return e
 }
 
-// ข้อความลดเท่าไหร่ของโค้ด
 function offText(c: DiscountCode) {
   return c.kind === 'percent' ? `−${c.value}%` : `−฿${c.value.toLocaleString('en-US')}`
 }
 
-// ข้อความจำนวนที่ใช้ไปของโค้ด
 function usedText(c: DiscountCode) {
   if (c.perPlayer && c.limit === null) return `คนละครั้ง · ใช้ไป ${c.used}`
   const text = `ใช้แล้ว ${c.used} / ${c.limit ?? 'ไม่จำกัด'}`
   return c.perPlayer ? 'คนละครั้ง · ' + text : text
 }
 
-// ข้อความช่วงเวลาของโค้ด
 function untilText(c: DiscountCode, now: number) {
   if (c.enabled === false) return 'ปิดอยู่'
   if (c.limit !== null && c.used >= c.limit) return 'ใช้ครบแล้ว'
@@ -109,7 +104,6 @@ function untilText(c: DiscountCode, now: number) {
   return 'ไม่หมดอายุ'
 }
 
-// หน้าตั้งค่าร้าน
 export function AdminSettings({ settings, codes, status, onSave, onCodes, onToast }: Props) {
   const [form, setForm] = useState<Form>(() => toForm(settings))
   const [errors, setErrors] = useState<Errors>({})
@@ -515,7 +509,6 @@ export function AdminSettings({ settings, codes, status, onSave, onCodes, onToas
 
 type TestProps = { state: Test; disabled: boolean; onClick: () => void }
 
-// ปุ่มทดสอบพร้อมผลลัพธ์
 function TestButton({ state, disabled, onClick }: TestProps) {
   return (
     <span className="test">

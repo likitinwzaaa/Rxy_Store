@@ -5,7 +5,6 @@ type Props = {
   disabled?: boolean
 }
 
-// สวิตช์เปิดปิด
 export function Toggle({ on, onChange, label, disabled }: Props) {
   return (
     <button

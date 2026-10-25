@@ -1,4 +1,3 @@
-// ใส่ CSP ตอนรันในเกม
 export function lockdown() {
   const policy = [
     "default-src 'self'",

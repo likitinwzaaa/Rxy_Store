@@ -36,14 +36,12 @@ export type ProductForm = {
 
 export type FormErrors = Partial<Record<'name' | 'price' | 'salePrice' | 'image' | 'stock' | 'limit' | 'rewards', string>>
 
-// เวลาแบบ datetime-local เช่น 2026-10-24T23:59
 function toLocalInput(ms?: number | null) {
   if (!ms) return ''
   const d = new Date(ms - new Date(ms).getTimezoneOffset() * 60000)
   return d.toISOString().slice(0, 16)
 }
 
-// แปลงสินค้าเป็นค่าในฟอร์ม
 export function toForm(p: Product): ProductForm {
   const onSale = !!p.oldPrice && p.oldPrice > p.price
   return {
@@ -68,7 +66,6 @@ export function toForm(p: Product): ProductForm {
   }
 }
 
-// ฟอร์มเปล่าสำหรับสินค้าใหม่
 export function emptyForm(category: string): ProductForm {
   return {
     id: '',
@@ -89,7 +86,6 @@ export function emptyForm(category: string): ProductForm {
 
 const isInt = (v: string) => /^\d+$/.test(v.trim())
 
-// ตรวจฟอร์มก่อนบันทึก
 export function validate(f: ProductForm): FormErrors {
   const e: FormErrors = {}
   if (!f.name.trim()) e.name = 'ต้องใส่ชื่อสินค้า'
@@ -110,7 +106,6 @@ export function validate(f: ProductForm): FormErrors {
   return e
 }
 
-// ทำ id จากชื่อ เช่น "Sultan RS" เป็น sultan_rs
 export function slug(name: string, taken: string[]) {
   let base = name
     .toLowerCase()
@@ -123,7 +118,6 @@ export function slug(name: string, taken: string[]) {
   return id
 }
 
-// แปลงค่าในฟอร์มกลับเป็นสินค้า
 export function fromForm(f: ProductForm, old: Product | null, taken: string[]): Product {
   const price = Number(f.price)
   const sale = f.salePrice.trim() ? Number(f.salePrice) : null

@@ -10,7 +10,6 @@ type Props = {
   children?: ReactNode
 }
 
-// หัวหน้าย่อย มีปุ่มกลับหน้าแรก
 export function PageHead({ title, sub, onBack, onClose, children }: Props) {
   return (
     <header className="shop-head page-head">

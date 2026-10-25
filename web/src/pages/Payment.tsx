@@ -24,7 +24,6 @@ type Props = {
   onDevPaidLater?: () => void
 }
 
-// หน้าจ่ายเงิน รวมตอนรอจ่าย จ่ายแล้ว และ QR หมดเวลา
 export function Payment(props: Props) {
   const { order } = props
 
@@ -59,7 +58,6 @@ export function Payment(props: Props) {
   )
 }
 
-// รอจ่าย
 function Pending({ shopName, order, onLater, onCancel, onExpire }: Props) {
   const now = useNow(1000)
   const left = order.expiresAt - now
@@ -123,7 +121,6 @@ function Pending({ shopName, order, onLater, onCancel, onExpire }: Props) {
   )
 }
 
-// QR หมดเวลา
 function Expired({ shopName, order, onRenew, onEditCart }: Props) {
   return (
     <div className="pay">
@@ -163,7 +160,6 @@ function Expired({ shopName, order, onRenew, onEditCart }: Props) {
   )
 }
 
-// จ่ายเรียบร้อย
 function Done({ order, characterName, onHome, onHistory, onInbox }: Props) {
   const inbox = (order.delivery ?? []).filter((d) => d.inbox > 0)
 

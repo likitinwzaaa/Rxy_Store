@@ -22,7 +22,6 @@ type Props = {
 
 const HOUR = 60 * 60 * 1000
 
-// เวลาที่เหลือ เช่น เหลือ 2 วัน 4 ชม.
 function leftText(ms: number) {
   const h = Math.floor(ms / HOUR)
   const d = Math.floor(h / 24)
@@ -31,7 +30,6 @@ function leftText(ms: number) {
   return `เหลือ ${d} วัน` + (r ? ` ${r} ชม.` : '')
 }
 
-// หน้าประวัติการซื้อกับของที่มีวันหมด
 export function History(props: Props) {
   const { tab, orders, owned } = props
   const now = useNow(60 * 1000)
@@ -70,7 +68,6 @@ export function History(props: Props) {
   )
 }
 
-// ช่องค้นหาคำสั่งซื้อ
 function OrderSearch({ orders, onView }: { orders: Order[]; onView: (o: Order) => void }) {
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(false)
@@ -125,7 +122,6 @@ function OrderSearch({ orders, onView }: { orders: Order[]; onView: (o: Order) =
   )
 }
 
-// รายการคำสั่งซื้อ
 function OrderList({ orders, onPay, onView }: Props) {
   const [copied, setCopied] = useState<string | null>(null)
 
@@ -186,7 +182,6 @@ function OrderList({ orders, onPay, onView }: Props) {
   )
 }
 
-// รายการของที่มีวันหมด
 function OwnedList({ owned, priceOf, onRenew, now }: Props & { now: number }) {
   if (owned.length === 0) return <p className="hist-empty">ยังไม่มีของที่มีวันหมด</p>
 

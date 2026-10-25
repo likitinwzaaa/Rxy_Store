@@ -188,7 +188,6 @@ export const discountCodes: DiscountCode[] = [
   { code: 'HALLOWEEN', kind: 'percent', value: 25, limit: 100, perPlayer: false, used: 0, startsAt: now + 9 * day },
 ]
 
-// ตรวจโค้ดส่วนลด
 export function checkCode(
   input: string,
   list: DiscountCode[] = discountCodes,
@@ -203,7 +202,6 @@ export function checkCode(
 
 const online: Record<string, string> = { '5': 'Mint T.', '23': 'Ploy Wong', '112': 'Apiploy S.' }
 
-// หาชื่อผู้เล่นที่ออนไลน์จาก ID
 export function findPlayer(id: string) {
   return online[id.trim()] ?? null
 }
@@ -219,7 +217,6 @@ const where: Record<string, string> = {
 
 let seq = 90
 
-// เลขคำสั่งซื้อ เช่น RXY-261022-0091
 function nextId() {
   const d = new Date()
   const ymd = String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0')
@@ -227,7 +224,6 @@ function nextId() {
   return `RXY-${ymd}-${String(seq).padStart(4, '0')}`
 }
 
-// สร้างคำสั่งซื้อจำลอง
 export function createOrder(cart: CartLine[], list: Product[], discount: Discount | null, recipient: string | null): Order {
   const { subtotal, off, total } = cartTotals(cart, list, discount)
 
@@ -248,7 +244,6 @@ export function createOrder(cart: CartLine[], list: Product[], discount: Discoun
   }
 }
 
-// จำลองการส่งของหลังจ่ายเงิน ไอเทมที่ซื้อหลายชิ้นจะเข้ากล่องรับของ 1 ชิ้น เหมือนกระเป๋าเต็ม
 export function deliver(order: Order, list: Product[]): Delivery[] {
   return order.lines.map((l) => {
     const p = list.find((x) => x.id === l.id)
@@ -270,14 +265,12 @@ export function deliver(order: Order, list: Product[]): Delivery[] {
   })
 }
 
-// สร้าง QR ใหม่จากคำสั่งซื้อเดิมที่หมดเวลา
 export function renewOrder(old: Order): Order {
   return { ...old, id: nextId(), createdAt: Date.now(), expiresAt: Date.now() + 10 * 60 * 1000, status: 'pending' }
 }
 
 const hour = 60 * 60 * 1000
 
-// ประวัติการซื้อจำลอง
 export const pastOrders: Order[] = [
   {
     id: 'RXY-261020-0077',
@@ -343,7 +336,6 @@ export const pastOrders: Order[] = [
   },
 ]
 
-// ของที่มีวันหมดจำลอง
 export const owned: Owned[] = [
   { id: 'o1', productId: 'elegy_rent', name: 'Elegy Retro Custom', label: 'รถเช่า 7 วัน', startsAt: now - 140 * hour, endsAt: now + 28 * hour },
   { id: 'o2', productId: 'vip_gold', name: 'VIP Gold', label: 'VIP 30 วัน', startsAt: now - 168 * hour, endsAt: now + 552 * hour },
@@ -351,7 +343,6 @@ export const owned: Owned[] = [
   { id: 'o4', productId: 'vip_silver', name: 'VIP Silver', label: 'VIP 7 วัน', startsAt: now - 30 * day, endsAt: now - 23 * day, pulledAt: now - 23 * day },
 ]
 
-// กล่องรับของจำลอง
 export const inbox: InboxItem[] = [
   { id: 'i1', name: 'VIP Gold 30 วัน', orderId: 'RXY-261022-0088', from: 'Mint T.', reason: 'กดรับได้เลย เริ่มนับวันตอนกดรับ' },
   { id: 'i2', name: 'ชุดเริ่มต้น ×1', orderId: 'RXY-261021-0083', reason: 'กระเป๋าเต็ม ต้องว่างอย่างน้อย 3 ช่อง', blocked: true },

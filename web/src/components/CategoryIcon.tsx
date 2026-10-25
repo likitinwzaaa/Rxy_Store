@@ -17,7 +17,6 @@ export const categoryIcons = {
 
 export type CategoryIconName = keyof typeof categoryIcons
 
-// ไอคอนของหมวดสินค้า
 export function CategoryIcon({ name, size = 18 }: { name: string; size?: number }) {
   const d = categoryIcons[name as CategoryIconName] ?? categoryIcons.box
   return (

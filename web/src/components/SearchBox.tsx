@@ -10,13 +10,11 @@ type Props = {
   onShowAll: (q: string) => void
 }
 
-// ตัดชื่อสินค้าเป็น 3 ท่อน เอาส่วนที่ตรงกับคำค้นไว้ตรงกลาง
 function split(name: string, needle: string) {
   const at = name.toLowerCase().indexOf(needle)
   return [name.slice(0, at), name.slice(at, at + needle.length), name.slice(at + needle.length)]
 }
 
-// ช่องค้นหาสินค้า มีคำแนะนำ 3 อัน
 export function SearchBox({ products, categoryName, onPick, onShowAll }: Props) {
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(false)

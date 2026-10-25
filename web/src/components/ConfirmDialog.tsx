@@ -11,7 +11,6 @@ type Props = {
   onCancel: () => void
 }
 
-// หน้าต่างยืนยันก่อนทำอะไรที่ย้อนไม่ได้
 export function ConfirmDialog({ title, desc, confirmLabel, danger, disabled, children, onConfirm, onCancel }: Props) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

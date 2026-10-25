@@ -1,6 +1,5 @@
 import type { Order, OrderStatus } from '../types'
 
-// ข้อความกับสีของสถานะคำสั่งซื้อ
 export function statusLook(s: OrderStatus) {
   if (s === 'pending') return { label: 'รอชำระ', tone: 'accent' }
   if (s === 'paid') return { label: 'ส่งของแล้ว', tone: 'ok' }
@@ -8,7 +7,6 @@ export function statusLook(s: OrderStatus) {
   return { label: 'หมดเวลา', tone: 'off' }
 }
 
-// ชื่อของในคำสั่งซื้อต่อกันเป็นบรรทัดเดียว
 export function orderItems(o: Order) {
   const text = o.lines.map((l) => (l.qty > 1 ? `${l.name} ×${l.qty}` : l.name)).join(', ')
   return o.recipient ? `${text} · ให้ ${o.recipient}` : text

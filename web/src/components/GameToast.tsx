@@ -10,7 +10,6 @@ type Props = {
 
 const SHOW_MS = 8000
 
-// แจ้งเตือนมุมขวาบนของจอ โชว์ตอนร้านปิดอยู่
 export function GameToast({ notice, shopName, openKey, onDone }: Props) {
   useEffect(() => {
     const t = setTimeout(onDone, SHOW_MS + 450)

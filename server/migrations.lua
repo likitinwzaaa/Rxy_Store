@@ -265,26 +265,31 @@ local migrations = {
         },
         sql = {},
     },
+    {
+        tables = {},
+        indexes = {
+            orders = {
+                { 'idx_recipient', '(recipient_id, status)' },
+            },
+        },
+        sql = {},
+    },
 }
 
--- พิมพ์ลง console พร้อมสี
 local function say(color, msg)
     print(('^%s[Rxy_Store]^7 %s^7'):format(color, msg))
 end
 
--- อ่านเวอร์ชัน DB ตอนนี้ ยังไม่เคยติดตั้งจะได้ 0
 local function currentVersion()
     MySQL.query.await(DB.sql('CREATE TABLE IF NOT EXISTS {meta} (k VARCHAR(64) NOT NULL PRIMARY KEY, v TEXT NULL) ' .. TABLE))
     local v = MySQL.scalar.await(DB.sql('SELECT v FROM {meta} WHERE k = ?'), { 'db_version' })
     return tonumber(v) or 0
 end
 
--- บันทึกค่าลงตาราง meta
 local function setMeta(k, v)
     MySQL.query.await(DB.sql('INSERT INTO {meta} (k, v) VALUES (?, ?) ON DUPLICATE KEY UPDATE v = VALUES(v)'), { k, tostring(v) })
 end
 
--- copy ตารางไว้ก่อนแก้ ชื่อเป็น rxy_store_bak_<ตาราง>_v<เวอร์ชันเดิม>
 local function backup(tables, version)
     for _, name in ipairs(tables) do
         local src = DB.t(name)
@@ -292,11 +297,9 @@ local function backup(tables, version)
         MySQL.query.await(('DROP TABLE IF EXISTS `%s`'):format(dst))
         MySQL.query.await(('CREATE TABLE `%s` LIKE `%s`'):format(dst, src))
         MySQL.query.await(('INSERT INTO `%s` SELECT * FROM `%s`'):format(dst, src))
-        say('7', ('backup %s ไว้ที่ %s'):format(src, dst))
     end
 end
 
--- ลบ backup ที่เก่าเกินจำนวนชุดที่ตั้งไว้
 local function cleanBackups()
     if not Config.Backup.AutoClean then return end
 
@@ -319,7 +322,6 @@ local function cleanBackups()
     for i = (Config.Backup.Keep or 3) + 1, #versions do
         for _, name in ipairs(byVersion[versions[i]]) do
             MySQL.query.await(('DROP TABLE IF EXISTS `%s`'):format(name))
-            say('7', ('ลบ backup เก่า %s'):format(name))
         end
     end
 end
@@ -333,13 +335,21 @@ local function addColumn(name, column, definition)
     MySQL.query.await(('ALTER TABLE `%s` ADD COLUMN `%s` %s'):format(DB.t(name), column, definition))
 end
 
--- รัน migration ที่ยังไม่ได้รันทีละเวอร์ชัน
+local function addIndex(name, index, columns)
+    local exists = MySQL.scalar.await(
+        'SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND INDEX_NAME = ?',
+        { DB.t(name), index }
+    )
+    if tonumber(exists) and tonumber(exists) > 0 then return end
+    MySQL.query.await(('ALTER TABLE `%s` ADD INDEX `%s` %s'):format(DB.t(name), index, columns))
+end
+
 local function migrate()
     local from = currentVersion()
     local target = #migrations
 
     if from > target then
-        say('3', ('DB เป็นเวอร์ชัน %d แต่สคริปต์รู้จักแค่ถึง %d น่าจะใช้ไฟล์เก่ากว่าตอนติดตั้ง'):format(from, target))
+        say('3', 'Database was made by a newer version of Rxy_Store, please update the script')
         return true
     end
 
@@ -356,19 +366,26 @@ local function migrate()
                 addColumn(name, col[1], col[2])
             end
         end
+        for name, list in pairs(m.indexes or {}) do
+            for _, idx in ipairs(list) do
+                addIndex(name, idx[1], idx[2])
+            end
+        end
         setMeta('db_version', v)
         if v == 1 then setMeta('installed_at', DB.now()) end
-        say('2', ('อัปเดต DB เป็นเวอร์ชัน %d แล้ว'):format(v))
     end
 
-    if from < target then cleanBackups() end
+    if from < target then
+        cleanBackups()
+        say('2', 'Successfully updated database')
+    end
     return currentVersion() == target
 end
 
 MySQL.ready(function()
     local ok, done = pcall(migrate)
     if not ok or not done then
-        say('1', 'เตรียม DB ไม่สำเร็จ ร้านจะยังไม่เปิดให้ใช้ ดู error ด้านบน')
+        say('1', 'Failed to update database, the shop is disabled')
         if not ok then print(done) end
         return
     end

@@ -14,7 +14,6 @@ type Props = {
   onDone: () => void
 }
 
-// แจ้งเตือนมุมขวาล่าง หายเองใน 3 วิ
 export function Toast({ toast, onDone }: Props) {
   useEffect(() => {
     if (!toast) return

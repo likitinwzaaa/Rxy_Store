@@ -10,7 +10,6 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode
 }
 
-// ปุ่มทั่วไป
 export function Button({ variant = 'outline', size = 'md', icon, className = '', children, ...rest }: ButtonProps) {
   const cls = variant === 'link' ? 'ulink' : `btn btn-${variant} btn-${size}`
   return (
@@ -28,7 +27,6 @@ type IconButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   badgeColor?: 'accent' | 'accent-2'
 }
 
-// ปุ่มไอคอน มีตัวเลขมุมขวาบนได้
 export function IconButton({ icon, label, badge, badgeColor = 'accent', className = '', ...rest }: IconButtonProps) {
   return (
     <button type="button" className={`icon-btn ${className}`.trim()} aria-label={label} title={label} {...rest}>

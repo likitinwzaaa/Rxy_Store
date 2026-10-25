@@ -47,7 +47,6 @@ type Props = {
   stroke?: number
 }
 
-// ไอคอน svg
 export function Icon({ name, size = 16, stroke = 2 }: Props) {
   return (
     <svg

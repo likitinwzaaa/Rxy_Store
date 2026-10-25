@@ -8,7 +8,6 @@ type Props = {
   onHide: () => void
 }
 
-// แถบแจ้งว่ามีเวอร์ชันใหม่
 export function UpdateBar({ info, onSkip, onHide }: Props) {
   const [open, setOpen] = useState(info.security)
 

@@ -1,4 +1,3 @@
-// คัดลอกข้อความ
 export function copyText(text: string) {
   try {
     const el = document.createElement('textarea')

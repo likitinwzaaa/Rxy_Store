@@ -26,7 +26,6 @@ type Form = {
 
 const pickable = Object.keys(categoryIcons).filter((k) => k !== 'people' && k !== 'lock')
 
-// แปลงหมวดเป็นค่าในฟอร์ม
 function toForm(c: Category | null): Form {
   return {
     name: c?.name ?? '',
@@ -37,7 +36,6 @@ function toForm(c: Category | null): Form {
   }
 }
 
-// หน้าจัดการหมวดสินค้า
 export function AdminCategories({ categories, products, groups, onChange, onSaved }: Props) {
   const [selected, setSelected] = useState<string | null>(categories[0]?.id ?? null)
   const [form, setForm] = useState<Form>(() => toForm(categories[0] ?? null))

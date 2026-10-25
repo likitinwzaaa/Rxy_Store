@@ -434,3 +434,25 @@
 .dtp-time .input.tiny + .input.tiny {
   margin-left: 0;
 }
+
+.waiting {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: var(--text-2);
+  font-size: 15px;
+  animation: fade 0.25s ease-out both;
+}
+
+.waiting p {
+  margin: 0;
+}
+
+.waiting-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}

@@ -1,6 +1,5 @@
 import type { CartLine, Discount, Product } from '../types'
 
-// คิดราคารวมของตะกร้า
 export function cartTotals(lines: CartLine[], products: Product[], discount: Discount | null) {
   const subtotal = lines.reduce((sum, l) => {
     const p = products.find((x) => x.id === l.id)

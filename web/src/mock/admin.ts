@@ -42,7 +42,6 @@ export const updateInfo: UpdateInfo = {
   notes: ['เพิ่มหน้าตั้งค่าร้านในเกม', 'แก้ QR ไม่รีเฟรชตอนหมดเวลา', 'แบนเนอร์ตั้งเวลาได้'],
 }
 
-// คำสั่งซื้อทั้งเซิร์ฟสำหรับหน้าแอดมิน
 export const adminOrders: AdminOrder[] = [
   {
     id: 'RXY-261022-0091',

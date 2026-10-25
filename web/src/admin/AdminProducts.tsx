@@ -24,7 +24,6 @@ type Props = {
   onSaved: (msg: string) => void
 }
 
-// หน้าจัดการสินค้า
 export function AdminProducts({ products, categories, onChange, onSaved }: Props) {
   const [cat, setCat] = useState('all')
   const [q, setQ] = useState('')

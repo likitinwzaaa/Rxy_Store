@@ -5,10 +5,8 @@ export type Theme = {
 
 const DEFAULT_PRIMARY = '#FF7A1A'
 
-// เช็คว่าเป็นสี #RRGGBB
 export const isHex = (v: unknown): v is string => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v)
 
-// hex เป็น hsl
 function toHsl(hex: string): [number, number, number] {
   const n = parseInt(hex.slice(1), 16)
   const r = (n >> 16) / 255
@@ -28,7 +26,6 @@ function toHsl(hex: string): [number, number, number] {
   return [h * 60, s, l]
 }
 
-// hsl เป็น hex
 function toHex(h: number, s: number, l: number) {
   h = ((h % 360) + 360) % 360
   const c = (1 - Math.abs(2 * l - 1)) * s
@@ -40,13 +37,11 @@ function toHex(h: number, s: number, l: number) {
   return ('#' + to(r) + to(g) + to(b)).toUpperCase()
 }
 
-// หมุนสีตามวงล้อสี
 export function turn(hex: string, deg: number) {
   const [h, s, l] = toHsl(hex)
   return toHex(h + deg, Math.max(s, 0.55), Math.min(Math.max(l, 0.55), 0.68))
 }
 
-// ตั้งสีร้าน
 export function applyTheme(theme?: Partial<Theme>) {
   const primary = isHex(theme?.primary) ? theme.primary : DEFAULT_PRIMARY
   const secondary = isHex(theme?.secondary) ? theme.secondary : turn(primary, 180)

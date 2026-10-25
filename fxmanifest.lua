@@ -14,6 +14,15 @@ server_scripts {
     'server/db.lua',
     'server/log.lua',
     'server/migrations.lua',
+    'server/discord.lua',
+    'server/bridge/esx.lua',
+    'server/players.lua',
+    'server/perms.lua',
+    'server/requests.lua',
+    'server/settings.lua',
+    'server/catalog.lua',
+    'server/pricing.lua',
+    'server/shop.lua',
     'server/version.lua',
 }
 

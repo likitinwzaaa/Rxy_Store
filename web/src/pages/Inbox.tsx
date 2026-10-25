@@ -10,7 +10,6 @@ type Props = {
   onClose: () => void
 }
 
-// หน้ากล่องรับของ
 export function Inbox({ items, onClaim, onClaimAll, onBack, onClose }: Props) {
   const waiting = items.filter((i) => !i.claimedAt)
   const sorted = [...items].sort((a, b) => Number(!!a.claimedAt) - Number(!!b.claimedAt))

@@ -1,39 +1,29 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type {
+  AdminLoad,
   Banner,
   CartLine,
   Category,
-  Discount,
   DiscountCode,
   InboxItem,
   Notice,
   Order,
   Page,
   Product,
+  PublicSettings,
+  Quote,
+  ServerCatalog,
+  ShopOpen,
   ShopSettings,
 } from './types'
 import { useNuiEvent } from './hooks/useNuiEvent'
 import { fetchNui, isBrowser } from './lib/nui'
 import { applyTheme, type Theme } from './lib/theme'
-import { blockReason, maxQty } from './lib/product'
+import { blockReason, maxQty, setImageHosts } from './lib/product'
+import { call, errorText } from './lib/api'
+import { toProduct } from './lib/catalog'
 import { bannerState } from './lib/banner'
-import {
-  banners,
-  categories,
-  characterName,
-  checkCode,
-  createOrder,
-  deliver,
-  discountCodes,
-  findPlayer,
-  groups,
-  inbox,
-  owned,
-  pastOrders,
-  playerGroups,
-  products,
-  renewOrder,
-} from './mock/shop'
+import { createOrder, deliver, inbox, owned, pastOrders, renewOrder } from './mock/shop'
 import { Home } from './pages/Home'
 import { Cart, type Gift } from './pages/Cart'
 import { Payment } from './pages/Payment'
@@ -45,30 +35,39 @@ import { shopSettings } from './mock/admin'
 import { Toast, type ToastData } from './components/Toast'
 import { ProductModal } from './components/ProductModal'
 import { OrderModal } from './components/OrderModal'
+import { Waiting } from './components/Waiting'
 
 if (isBrowser) applyTheme({ primary: '#FF7A1A' })
 
-// หน้าหลักของร้าน
 export default function App() {
   const [visible, setVisible] = useState(isBrowser)
   const [admin, setAdmin] = useState(isBrowser && location.hash.startsWith('#admin'))
-  const [catalog, setCatalog] = useState<Product[]>(products)
-  const [cats, setCats] = useState<Category[]>(categories)
-  const [bannerList, setBannerList] = useState<Banner[]>(banners)
+  const [shop, setShop] = useState<{ catalog: ServerCatalog; stock: Record<string, number>; bought: Record<string, number> } | null>(null)
+  const cacheRef = useRef<{ version: number; vis: string; catalog: ServerCatalog } | null>(null)
+  const [load, setLoad] = useState<{ busy: boolean; slow?: boolean; error?: string | null }>({ busy: false })
+  const [playerName, setPlayerName] = useState('')
+  const [adminData, setAdminData] = useState<AdminLoad | null>(null)
+  const [aProducts, setAProducts] = useState<Product[]>([])
+  const [aCats, setACats] = useState<Category[]>([])
+  const [aBanners, setABanners] = useState<Banner[]>([])
   const [bannerSeconds, setBannerSeconds] = useState(5)
   const [settings, setSettings] = useState<ShopSettings>(shopSettings)
-  const [codes, setCodes] = useState<DiscountCode[]>(discountCodes)
+  const [codes, setCodes] = useState<DiscountCode[]>([])
   const [page, setPage] = useState<Page>('home')
   const [cart, setCart] = useState<CartLine[]>([])
-  const [discount, setDiscount] = useState<Discount | null>(null)
+  const [code, setCode] = useState<string | null>(null)
+  const [quote, setQuote] = useState<Quote | null>(null)
+  const quoteSeq = useRef(0)
   const [gift, setGift] = useState<Gift>({ on: false, id: '' })
-  const [orders, setOrders] = useState<Order[]>(pastOrders)
+  const [giftName, setGiftName] = useState<string | null>(null)
+  const [giftChecking, setGiftChecking] = useState(false)
+  const [orders, setOrders] = useState<Order[]>(isBrowser ? pastOrders : [])
   const [payId, setPayId] = useState<string | null>(null)
   const [cartOrderId, setCartOrderId] = useState<string | null>(null)
   const [detail, setDetail] = useState<Product | null>(null)
   const [viewOrder, setViewOrder] = useState<Order | null>(null)
   const [toast, setToast] = useState<ToastData | null>(null)
-  const [inboxItems, setInboxItems] = useState<InboxItem[]>(inbox)
+  const [inboxItems, setInboxItems] = useState<InboxItem[]>(isBrowser ? inbox : [])
   const [notice, setNotice] = useState<Notice | null>(null)
 
   useNuiEvent<boolean>('setVisible', setVisible)
@@ -94,6 +93,107 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [visible, admin, detail, viewOrder, page])
 
+  const catalog = useMemo(
+    () => (shop ? shop.catalog.products.map((p) => toProduct(p, shop.stock, shop.bought)) : []),
+    [shop],
+  )
+  const cats = shop?.catalog.categories ?? []
+  const bannerList = shop?.catalog.banners ?? []
+
+  const applySettings = useCallback((s: Pick<PublicSettings, 'name' | 'theme' | 'openKey' | 'bannerSeconds'>) => {
+    applyTheme(s.theme ?? undefined)
+    setBannerSeconds(s.bannerSeconds || 5)
+    setSettings((prev) => ({
+      ...prev,
+      name: s.name,
+      openKey: s.openKey,
+      theme: { primary: s.theme?.primary ?? '#FF7A1A', secondary: s.theme?.secondary ?? null },
+    }))
+  }, [])
+
+  const loadShop = useCallback(async () => {
+    setLoad({ busy: true })
+    const cached = cacheRef.current
+    const res = await call<ShopOpen>('shop:open', { version: cached?.version, vis: cached?.vis })
+    if (!res.ok) {
+      setLoad({ busy: false, error: errorText(res.error) })
+      return
+    }
+    const d = res.data
+    const catalog = d.catalog ?? cached?.catalog
+    if (!catalog) {
+      cacheRef.current = null
+      setLoad({ busy: false, error: errorText('error') })
+      return
+    }
+    cacheRef.current = { version: d.version, vis: d.vis, catalog }
+    setShop({ catalog, stock: d.stock ?? {}, bought: d.bought ?? {} })
+    setImageHosts(d.settings.imageHosts)
+    applySettings(d.settings)
+    setPlayerName(d.player.name)
+    setLoad({ busy: false })
+  }, [applySettings])
+
+  const loadAdmin = useCallback(async () => {
+    setLoad({ busy: true })
+    const res = await call<AdminLoad>('admin:load')
+    if (!res.ok) {
+      setLoad({ busy: false, error: errorText(res.error) })
+      return
+    }
+    const d = res.data
+    setAdminData(d)
+    setAProducts(d.products.map((p) => toProduct(p, {}, {}, true)))
+    setACats(d.categories)
+    setABanners(d.banners)
+    setCodes(d.codes)
+    setImageHosts(d.imageHosts)
+    applySettings(d.settings)
+    setLoad({ busy: false })
+  }, [applySettings])
+
+  const reload = useCallback(() => (admin ? loadAdmin() : loadShop()), [admin, loadAdmin, loadShop])
+
+  useEffect(() => {
+    if (visible) reload()
+  }, [visible, reload])
+
+  useEffect(() => {
+    if (!load.busy) return
+    const t = setTimeout(() => setLoad((l) => (l.busy ? { ...l, slow: true } : l)), 10000)
+    return () => clearTimeout(t)
+  }, [load.busy])
+
+  useEffect(() => {
+    if (!visible || admin || page !== 'cart' || cart.length === 0) return
+    const seq = ++quoteSeq.current
+    const t = setTimeout(async () => {
+      const res = await call<Quote>('cart:quote', { lines: cart, code })
+      if (res.ok && seq === quoteSeq.current) setQuote(res.data)
+    }, 250)
+    return () => clearTimeout(t)
+  }, [visible, admin, page, cart, code])
+
+  useEffect(() => {
+    setGiftName(null)
+    if (!gift.on || !gift.id) {
+      setGiftChecking(false)
+      return
+    }
+    setGiftChecking(true)
+    let alive = true
+    const t = setTimeout(async () => {
+      const res = await call<{ id: number; name: string }>('player:find', { id: Number(gift.id) })
+      if (!alive) return
+      setGiftName(res.ok ? res.data.name : null)
+      setGiftChecking(false)
+    }, 400)
+    return () => {
+      alive = false
+      clearTimeout(t)
+    }
+  }, [gift.on, gift.id])
+
   const hideToast = useCallback(() => setToast(null), [])
   const hideNotice = useCallback(() => setNotice(null), [])
 
@@ -101,7 +201,6 @@ export default function App() {
     setOrders((list) => list.map((o) => (o.id === payId && o.status === 'pending' ? { ...o, status: 'expired' } : o)))
   }, [payId])
 
-  // ปิดร้าน
   function close() {
     setDetail(null)
     setViewOrder(null)
@@ -109,13 +208,16 @@ export default function App() {
     fetchNui('close')
   }
 
-  // บันทึกตั้งค่าร้านแล้วเปลี่ยนสีตาม
   function saveSettings(next: ShopSettings) {
     setSettings(next)
     applyTheme(next.theme)
   }
 
-  // เปลี่ยนหน้า
+  function closeLoad() {
+    setLoad({ busy: false })
+    close()
+  }
+
   function go(next: Page) {
     setDetail(null)
     setViewOrder(null)
@@ -123,7 +225,6 @@ export default function App() {
     setPage(next)
   }
 
-  // ใส่สินค้าลงตะกร้า
   function addToCart(p: Product, qty = 1) {
     const inCart = cart.find((l) => l.id === p.id)?.qty ?? 0
     const max = maxQty(p)
@@ -146,54 +247,54 @@ export default function App() {
     return true
   }
 
-  // เปลี่ยนจำนวนของในตะกร้า
   function setQty(id: string, qty: number) {
     setCart((lines) => lines.map((l) => (l.id === id ? { ...l, qty } : l)))
   }
 
-  // เอาของออกจากตะกร้า
   function remove(id: string) {
     setCart((lines) => lines.filter((l) => l.id !== id))
   }
 
-  // ใช้โค้ดส่วนลด คืนข้อความ error ถ้าใช้ไม่ได้
-  function applyCode(code: string) {
-    const res = checkCode(code, codes)
-    if (!res.ok) return res.error
-    setDiscount(res.discount)
+  async function applyCode(text: string) {
+    const res = await call<Quote>('cart:quote', { lines: cart, code: text })
+    if (!res.ok) return errorText(res.error)
+    if (res.data.codeError || !res.data.code) return res.data.codeError ?? 'ไม่มีโค้ดนี้'
+    quoteSeq.current++
+    setQuote(res.data)
+    setCode(res.data.code)
     return null
   }
 
-  // เปิดหน้าจ่ายเงินของคำสั่งซื้อนี้
   function startPay(o: Order) {
     setOrders((list) => [o, ...list.filter((x) => x.id !== o.id)])
     setPayId(o.id)
     go('payment')
   }
 
-  // สร้างคำสั่งซื้อจากตะกร้า
   function checkout() {
-    const recipient = gift.on ? findPlayer(gift.id) : null
-    const o = createOrder(cart, catalog, discount, recipient)
+    if (!isBrowser) {
+      setToast({ key: Date.now(), tone: 'warn', title: 'ยังจ่ายเงินไม่ได้', detail: 'ระบบจ่ายเงินยังไม่เปิดใช้' })
+      return
+    }
+    const recipient = gift.on ? giftName : null
+    const off = quote?.code ? quote.codeOff : 0
+    const o = createOrder(cart, catalog, off ? { code: quote?.code ?? '', kind: 'fixed', value: off } : null, recipient)
     setCartOrderId(o.id)
     startPay(o)
   }
 
-  // สร้าง QR ใหม่จากคำสั่งซื้อที่หมดเวลา
   function renew(old: Order) {
     const o = renewOrder(old)
     if (old.id === cartOrderId) setCartOrderId(o.id)
     startPay(o)
   }
 
-  // ยกเลิกคำสั่งซื้อที่ยังไม่จ่าย
   function cancel(o: Order) {
     setOrders((list) => list.filter((x) => x.id !== o.id))
     setPayId(null)
     go(o.id === cartOrderId ? 'cart' : 'history')
   }
 
-  // จ่ายเงินสำเร็จ ถ้าร้านปิดอยู่จะแจ้งเตือนมุมจอแทน
   function paid(o: Order, shopClosed = false) {
     const delivery = deliver(o, catalog)
     const done: Order = {
@@ -230,13 +331,13 @@ export default function App() {
 
     if (o.id === cartOrderId) {
       setCart([])
-      setDiscount(null)
+      setCode(null)
+      setQuote(null)
       setGift({ on: false, id: '' })
       setCartOrderId(null)
     }
   }
 
-  // รับของจากกล่องรับของ
   function claim(item: InboxItem) {
     if (item.blocked) {
       setToast({ key: Date.now(), tone: 'warn', title: 'ยังรับไม่ได้', detail: item.reason })
@@ -248,7 +349,6 @@ export default function App() {
     setToast({ key: Date.now(), title: 'รับของแล้ว', detail: item.name })
   }
 
-  // รับทุกชิ้นที่รับได้
   function claimAll() {
     const ready = inboxItems.filter((x) => !x.claimedAt && !x.blocked)
     const stuck = inboxItems.filter((x) => !x.claimedAt && x.blocked).length
@@ -267,7 +367,6 @@ export default function App() {
     })
   }
 
-  // ต่ออายุของ ใส่ตะกร้าแล้วไปหน้าตะกร้า
   function renewItem(productId: string) {
     const p = catalog.find((x) => x.id === productId)
     if (p && addToCart(p)) go('cart')
@@ -275,6 +374,14 @@ export default function App() {
 
   if (!visible) {
     return notice ? <GameToast notice={notice} shopName={settings.name} openKey={settings.openKey} onDone={hideNotice} /> : null
+  }
+
+  if (load.busy || load.error) {
+    return (
+      <div className="shop">
+        <Waiting slow={load.slow} error={load.error} onRetry={reload} onClose={closeLoad} />
+      </div>
+    )
   }
 
   if (admin) {
@@ -285,14 +392,14 @@ export default function App() {
           codes={codes}
           onSettings={saveSettings}
           onCodes={setCodes}
-          products={catalog}
-          categories={cats}
-          groups={groups}
-          onProducts={setCatalog}
-          onCategories={setCats}
-          banners={bannerList}
+          products={aProducts}
+          categories={aCats}
+          groups={adminData?.groups ?? []}
+          onProducts={setAProducts}
+          onCategories={setACats}
+          banners={aBanners}
           bannerSeconds={bannerSeconds}
-          onBanners={setBannerList}
+          onBanners={setABanners}
           onBannerSeconds={setBannerSeconds}
           onToast={(title) => setToast({ key: Date.now(), title })}
           onClose={close}
@@ -305,7 +412,6 @@ export default function App() {
   const cartCount = cart.reduce((n, l) => n + l.qty, 0)
   const shownCats = cats.filter((c) => {
     if (c.enabled === false) return false
-    if (c.groups?.length && !c.groups.some((g) => playerGroups.includes(g))) return false
     if (c.hideEmpty && !catalog.some((p) => p.category === c.id && p.enabled !== false && !blockReason(p))) return false
     return true
   })
@@ -341,14 +447,16 @@ export default function App() {
           lines={cart}
           products={catalog}
           categoryName={catName}
-          discount={discount}
+          code={code}
+          quote={quote}
           gift={gift}
-          characterName={characterName}
-          findPlayer={findPlayer}
+          giftName={giftName}
+          giftChecking={giftChecking}
+          characterName={playerName}
           onQty={setQty}
           onRemove={remove}
           onCode={applyCode}
-          onClearCode={() => setDiscount(null)}
+          onClearCode={() => setCode(null)}
           onGift={setGift}
           onPay={checkout}
           onBack={() => go('home')}
@@ -360,7 +468,7 @@ export default function App() {
         <Payment
           shopName={settings.name}
           order={order}
-          characterName={characterName}
+          characterName={playerName}
           dev={isBrowser}
           onLater={close}
           onCancel={() => cancel(order)}

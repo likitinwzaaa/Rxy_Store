@@ -25,7 +25,6 @@ type Form = {
 
 type Errors = Partial<Record<'code' | 'value' | 'limit' | 'end', string>>
 
-// ตรวจค่าในฟอร์มโค้ดส่วนลด
 function validate(f: Form, taken: string[], old: string | null): Errors {
   const e: Errors = {}
   if (!/^[A-Z0-9_]{3,16}$/.test(f.code)) e.code = 'A-Z, 0-9 หรือ _ ยาว 3 ถึง 16 ตัว'
@@ -40,7 +39,6 @@ function validate(f: Form, taken: string[], old: string | null): Errors {
   return e
 }
 
-// หน้าต่างเพิ่มหรือแก้โค้ดส่วนลด
 export function CodeDialog({ code, taken, onSave, onDelete, onCancel }: Props) {
   const old = code?.code ?? null
   const [form, setForm] = useState<Form>({

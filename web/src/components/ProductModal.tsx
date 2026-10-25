@@ -22,7 +22,6 @@ const where: Record<Reward['kind'], string> = {
   command: 'ระบบ',
 }
 
-// จำนวนของที่ได้ เช่น 1 คัน, ×2, 5,000
 function amountText(r: Reward) {
   if (r.kind === 'vehicle') return r.amount + ' คัน'
   if (r.kind === 'money' || r.kind === 'points') return r.amount.toLocaleString('en-US')
@@ -30,7 +29,6 @@ function amountText(r: Reward) {
   return '×' + r.amount
 }
 
-// หน้าต่างรายละเอียดสินค้า
 export function ProductModal({ product: p, categoryName, inCart, onAdd, onClose }: Props) {
   const [qty, setQty] = useState(1)
   const now = useNow(1000, !!p.saleEndsAt || !!p.startsAt)

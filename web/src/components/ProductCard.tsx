@@ -11,7 +11,6 @@ type Props = {
   onOpen: (p: Product) => void
 }
 
-// การ์ดสินค้าในหน้าร้าน
 export function ProductCard({ product: p, categoryName, delay, onAdd, onOpen }: Props) {
   const why = blockReason(p)
   const off = discount(p)

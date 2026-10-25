@@ -10,14 +10,12 @@ type Props = {
   expired?: boolean
 }
 
-// รูป QR จาก server ต้องเป็น https หรือ data:image เท่านั้น
 function qrSource(src?: string | null) {
   if (!src) return null
   if (/^data:image\/(png|svg\+xml);base64,[a-z0-9+/=]+$/i.test(src)) return src
   return safeImage(src)
 }
 
-// ลาย QR ปลอมไว้โชว์ตอนยังไม่ได้ต่อ server
 function fakeQr(seed: string) {
   let h = 0
   for (const c of seed) h = (h * 31 + c.charCodeAt(0)) >>> 0
@@ -33,7 +31,6 @@ function fakeQr(seed: string) {
   return cells
 }
 
-// การ์ด QR แบบตั๋ว
 export function QrCard({ shopName, orderId, total, qr, expired }: Props) {
   const src = qrSource(qr)
   const cells = useMemo(() => (src ? [] : fakeQr(orderId)), [src, orderId])

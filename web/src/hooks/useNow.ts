@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 
-// เวลาปัจจุบัน ใช้กับตัวนับถอยหลัง
 export function useNow(every = 1000, enabled = true) {
   const [now, setNow] = useState(Date.now)
 

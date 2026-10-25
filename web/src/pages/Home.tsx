@@ -23,7 +23,6 @@ type Props = {
 
 type View = { cat: string; q?: string }
 
-// หน้าแรกของร้าน
 export function Home(props: Props) {
   const { shopName, products, categories, banners, bannerSeconds, cartCount, inboxCount, onAdd, onOpen, onGo, onClose } = props
   const [view, setView] = useState<View>({ cat: 'all' })

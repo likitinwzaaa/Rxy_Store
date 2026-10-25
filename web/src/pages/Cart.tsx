@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import type { CartLine, Discount, Product } from '../types'
+import type { CartLine, Product, Quote } from '../types'
 import { baht } from '../lib/format'
 import { maxQty, safeImage } from '../lib/product'
-import { cartTotals } from '../lib/cart'
 import { PageHead } from '../components/PageHead'
 import { Button } from '../components/Button'
 import { Toggle } from '../components/Toggle'
@@ -14,13 +13,15 @@ type Props = {
   lines: CartLine[]
   products: Product[]
   categoryName: (id: string) => string
-  discount: Discount | null
+  code: string | null
+  quote: Quote | null
   gift: Gift
+  giftName: string | null
+  giftChecking: boolean
   characterName: string
-  findPlayer: (id: string) => string | null
   onQty: (id: string, qty: number) => void
   onRemove: (id: string) => void
-  onCode: (code: string) => string | null
+  onCode: (code: string) => Promise<string | null>
   onClearCode: () => void
   onGift: (g: Gift) => void
   onPay: () => void
@@ -28,7 +29,6 @@ type Props = {
   onClose: () => void
 }
 
-// ข้อความใต้ชื่อสินค้าในตะกร้า
 function lineNote(p: Product) {
   const parts: string[] = []
   if (p.rewards.some((r) => r.days)) parts.push('ต่ออายุจากของเดิมได้')
@@ -37,26 +37,32 @@ function lineNote(p: Product) {
   return parts.join(' · ')
 }
 
-// หน้าตะกร้า
 export function Cart(props: Props) {
-  const { lines, products, categoryName, discount, gift, characterName, findPlayer } = props
-  const [code, setCode] = useState(discount?.code ?? '')
+  const { lines, products, categoryName, quote, gift, giftName, giftChecking, characterName } = props
+  const [code, setCode] = useState(props.code ?? '')
   const [codeError, setCodeError] = useState<string | null>(null)
+  const [checking, setChecking] = useState(false)
 
   const rows = lines
     .map((l) => ({ line: l, product: products.find((p) => p.id === l.id) }))
     .filter((r): r is { line: CartLine; product: Product } => !!r.product)
 
-  const { subtotal, off, total } = cartTotals(lines, products, discount)
+  const localSubtotal = rows.reduce((n, r) => n + r.product.price * r.line.qty, 0)
+  const subtotal = quote ? quote.subtotal : localSubtotal
+  const codeOff = quote && props.code ? quote.codeOff : 0
+  const tierOff = quote ? quote.tierOff : 0
+  const total = quote ? quote.total : localSubtotal
   const count = lines.reduce((n, l) => n + l.qty, 0)
+  const issue = (id: string) => quote?.issues.find((i) => i.id === id)?.reason
 
-  const giftName = gift.on && gift.id ? findPlayer(gift.id) : null
-  const giftMissing = gift.on && gift.id !== '' && !giftName
-  const canPay = rows.length > 0 && (!gift.on || !!giftName)
+  const giftMissing = gift.on && gift.id !== '' && !giftChecking && !giftName
+  const canPay = rows.length > 0 && (!gift.on || !!giftName) && !quote?.issues.length
 
-  function applyCode() {
-    if (!code.trim()) return
-    setCodeError(props.onCode(code))
+  async function applyCode() {
+    if (!code.trim() || checking) return
+    setChecking(true)
+    setCodeError(await props.onCode(code.trim()))
+    setChecking(false)
   }
 
   return (
@@ -83,7 +89,11 @@ export function Cart(props: Props) {
                   <div className="cart-info">
                     <span className="cart-cat">{categoryName(p.category)}</span>
                     <span className="cart-name">{p.name}</span>
-                    <span className="cart-note">{lineNote(p)}</span>
+                    {issue(p.id) ? (
+                      <span className="cart-note bad">{issue(p.id)}</span>
+                    ) : (
+                      <span className="cart-note">{lineNote(p)}</span>
+                    )}
                   </div>
                   <div className="stepper sm">
                     <button
@@ -118,10 +128,10 @@ export function Cart(props: Props) {
 
             <div className="field-group">
               <label htmlFor="code">โค้ดส่วนลด</label>
-              {discount ? (
+              {props.code ? (
                 <div className="code-on">
-                  <span className="mono">{discount.code}</span>
-                  <span>ลด {discount.kind === 'percent' ? discount.value + '%' : baht(discount.value)}</span>
+                  <span className="mono">{props.code}</span>
+                  <span>{quote?.codeError ? quote.codeError : codeOff > 0 ? 'ลด ' + baht(codeOff) : ''}</span>
                   <button
                     type="button"
                     className="ulink"
@@ -147,7 +157,9 @@ export function Cart(props: Props) {
                       }}
                       onKeyDown={(e) => e.key === 'Enter' && applyCode()}
                     />
-                    <Button onClick={applyCode}>ใช้โค้ด</Button>
+                    <Button onClick={applyCode} disabled={checking}>
+                      {checking ? 'กำลังเช็ค' : 'ใช้โค้ด'}
+                    </Button>
                   </div>
                   {codeError && <span className="field-err">{codeError}</span>}
                 </>
@@ -159,10 +171,16 @@ export function Cart(props: Props) {
                 <span>ราคาสินค้า</span>
                 <span className="mono">{baht(subtotal)}</span>
               </div>
-              {off > 0 && (
+              {codeOff > 0 && (
                 <div className="sum-off">
-                  <span>ส่วนลด {discount?.code}</span>
-                  <span className="mono">−{baht(off)}</span>
+                  <span>ส่วนลด {props.code}</span>
+                  <span className="mono">−{baht(codeOff)}</span>
+                </div>
+              )}
+              {tierOff > 0 && (
+                <div className="sum-off">
+                  <span>ส่วนลดขั้น {quote?.tier}</span>
+                  <span className="mono">−{baht(tierOff)}</span>
                 </div>
               )}
             </div>
@@ -199,15 +217,15 @@ export function Cart(props: Props) {
               <p className="notice">
                 {!gift.on && (
                   <>
-                    ของจะเข้าตัวละคร <b>{characterName}</b> ทันทีที่จ่ายเสร็จ ถ้าออฟไลน์อยู่จะได้ตอนเข้าเกมครั้งถัดไป
+                    ของจะเข้าตัวละคร <b>{characterName}</b> ทันทีที่จ่ายเสร็จ ถ้าออฟไลน์อยู่หรือกระเป๋าเต็ม ของจะเข้ากล่องรับของ
                   </>
                 )}
                 {giftName && (
                   <>
-                    ของจะเข้ากล่องรับของของ <b>{giftName}</b> พร้อมบอกว่าคุณเป็นคนให้ ลิมิตต่อคนนับที่คนรับ
+                    ของจะเข้ากล่องรับของของ <b>{giftName}</b> พร้อมบอกว่าคุณเป็นคนให้ ลิมิตต่อคนนับทั้งคุณและคนรับ
                   </>
                 )}
-                {gift.on && !giftName && 'ใส่ ID ของคนที่ออนไลน์อยู่ก่อน ถึงจะจ่ายได้'}
+                {gift.on && !giftName && (giftChecking ? 'กำลังหาผู้เล่น...' : 'ใส่ ID ของคนที่ออนไลน์อยู่ก่อน ถึงจะจ่ายได้')}
               </p>
               <Button variant="solid" size="lg" className="pay-btn" disabled={!canPay} onClick={props.onPay}>
                 ชำระด้วย PromptPay

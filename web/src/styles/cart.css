@@ -262,3 +262,7 @@
 .cart-empty p {
   margin: 0;
 }
+
+.cart-note.bad {
+  color: #ff6b6b;
+}

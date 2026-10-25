@@ -35,7 +35,6 @@ const tabs: { id: AdminPage; name: string }[] = [
   { id: 'settings', name: 'ตั้งค่าร้าน' },
 ]
 
-// หน้าแอดมิน
 export function AdminApp(props: Props) {
   const { settings, codes, onSettings, onCodes, products, categories, groups, onProducts, onCategories, onToast, onClose } = props
   const { banners, bannerSeconds, onBanners, onBannerSeconds } = props

@@ -27,19 +27,16 @@ const months = [
 const weekdays = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส']
 const pad = (n: number) => String(n).padStart(2, '0')
 
-// แยกค่า YYYY-MM-DDTHH:mm เป็นตัวเลข
 function parse(v: string) {
   const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(v)
   if (!m) return null
   return { y: +m[1], mo: +m[2] - 1, d: +m[3], h: +m[4], mi: +m[5] }
 }
 
-// ประกอบตัวเลขกลับเป็น YYYY-MM-DDTHH:mm
 function build(y: number, mo: number, d: number, h: number, mi: number) {
   return `${y}-${pad(mo + 1)}-${pad(d)}T${pad(h)}:${pad(mi)}`
 }
 
-// ช่องเลือกวันเวลาแบบไทย 31/10/2569 23:59
 export function DateTimeField({ id, value, onChange, invalid, align = 'left', defaultTime = '00:00' }: Props) {
   const v = parse(value)
   const today = new Date()

@@ -9,7 +9,6 @@ type Props = {
   onOpen: (b: Banner) => void
 }
 
-// แบนเนอร์เลื่อนรูปเอง หยุดตอนเอาเมาส์ชี้
 export function BannerSlider({ banners, interval = 5000, onOpen }: Props) {
   const [index, setIndex] = useState(0)
   const [paused, setPaused] = useState(false)

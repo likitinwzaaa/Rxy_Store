@@ -8,7 +8,6 @@ type Props = {
   onClose: () => void
 }
 
-// หน้าต่างรายละเอียดคำสั่งซื้อ
 export function OrderModal({ order, onClose }: Props) {
   const look = statusLook(order.status)
 

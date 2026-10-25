@@ -25,7 +25,6 @@ const filters: { id: Filter; name: string }[] = [
 
 const reasons = ['ส่งของไม่ได้ / ระบบผิดพลาด', 'ผู้เล่นขอยกเลิก', 'จ่ายซ้ำ', 'อื่นๆ']
 
-// สถานะที่แอดมินเห็น แยกจ่ายแล้วแต่ของยังค้างกล่องออกมา
 function stateOf(o: AdminOrder): Filter {
   if (o.status === 'paid') return o.delivery?.some((d) => d.inbox > 0) ? 'queued' : 'done'
   return o.status
@@ -42,7 +41,6 @@ const look: Record<Exclude<Filter, 'all'>, { label: string; tone: string; pulse?
 const isToday = (ms: number) => new Date(ms).toDateString() === new Date().toDateString()
 const isYesterday = (ms: number) => new Date(ms + 24 * 60 * 60 * 1000).toDateString() === new Date().toDateString()
 
-// หน้าคำสั่งซื้อทั้งเซิร์ฟ
 export function AdminOrders({ orders, onChange, onToast }: Props) {
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(false)
@@ -252,7 +250,6 @@ type DrawerProps = {
   onClose: () => void
 }
 
-// แผงรายละเอียดคำสั่งซื้อด้านขวา
 function OrderDrawer({ order: o, state, onNote, onResend, onRefund, onClose }: DrawerProps) {
   const [note, setNote] = useState(o.note ?? '')
   const [copied, setCopied] = useState<string | null>(null)
@@ -395,7 +392,6 @@ type RefundProps = {
   onCancel: () => void
 }
 
-// หน้าต่างยืนยันคืนเงิน ต้องพิมพ์เลขท้ายคำสั่งซื้อก่อน
 function RefundDialog({ order, onConfirm, onCancel }: RefundProps) {
   const [reason, setReason] = useState(reasons[0])
   const [takeBack, setTakeBack] = useState(true)

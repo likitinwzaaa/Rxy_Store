@@ -10,7 +10,6 @@ type Props = {
   onSelect: (id: string) => void
 }
 
-// รายการหมวดด้านซ้าย
 export function CategoryNav({ items, active, onSelect }: Props) {
   return (
     <nav className="cats" aria-label="หมวดสินค้า">

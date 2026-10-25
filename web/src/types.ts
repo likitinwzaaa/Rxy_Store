@@ -25,7 +25,11 @@ export type Product = {
   saleEndsAt?: number | null
   enabled?: boolean
   hideWhenBlocked?: boolean
+  limitPeriod?: LimitPeriod
+  rev?: number
 }
+
+export type LimitPeriod = 'ever' | 'day' | 'week' | 'month'
 
 export type Category = {
   id: string
@@ -34,6 +38,7 @@ export type Category = {
   enabled?: boolean
   groups?: string[] | null
   hideEmpty?: boolean
+  rev?: number
 }
 
 export type BannerLink = { kind: 'none' } | { kind: 'product'; id: string } | { kind: 'category'; id: string }
@@ -46,6 +51,7 @@ export type Banner = {
   startsAt?: number | null
   endsAt?: number | null
   enabled?: boolean
+  rev?: number
 }
 
 export type CartLine = {
@@ -66,6 +72,12 @@ export type DiscountCode = Discount & {
   startsAt?: number | null
   endsAt?: number | null
   enabled?: boolean
+  allowOnSale?: boolean
+  minTotal?: number | null
+  maxOff?: number | null
+  onlyCategories?: string[]
+  onlyProducts?: string[]
+  rev?: number
 }
 
 export type OrderLine = {
@@ -171,4 +183,79 @@ export type UpdateInfo = {
   latest: string
   security: boolean
   notes: string[]
+}
+
+export type ServerProduct = {
+  id: string
+  name: string
+  category: string
+  description?: string | null
+  image?: string | null
+  price: number
+  salePrice?: number | null
+  saleEndsAt?: number | null
+  stock?: number | null
+  limit?: number | null
+  limitPeriod?: LimitPeriod
+  rewards: Reward[]
+  featured?: boolean
+  startsAt?: number | null
+  hideWhenBlocked?: boolean
+  enabled?: boolean
+  rev?: number
+}
+
+export type ServerCatalog = {
+  categories: Category[]
+  products: ServerProduct[]
+  banners: Banner[]
+}
+
+export type PublicSettings = {
+  name: string
+  theme: { primary: string; secondary?: string | null } | null
+  openKey: string
+  bannerSeconds: number
+  imageHosts: string[]
+}
+
+export type ShopOpen = {
+  version: number
+  vis: string
+  catalog?: ServerCatalog
+  stock: Record<string, number>
+  bought: Record<string, number>
+  settings: PublicSettings
+  player: { name: string; mismatch: boolean }
+}
+
+export type QuoteIssue = { id: string; reason: string; max: number }
+
+export type Quote = {
+  lines: { id: string; qty: number; price: number }[]
+  issues: QuoteIssue[]
+  subtotal: number
+  codeOff: number
+  tierOff: number
+  total: number
+  code?: string | null
+  codeError?: string | null
+  tier?: string | null
+}
+
+export type AdminLoad = {
+  dev: boolean
+  categories: Category[]
+  products: ServerProduct[]
+  banners: Banner[]
+  codes: DiscountCode[]
+  groups: { id: string; name: string }[]
+  settings: {
+    name: string
+    theme: { primary: string; secondary?: string | null } | null
+    openKey: string
+    bannerSeconds: number
+    locked: { name: boolean; theme: boolean; openKey: boolean }
+  }
+  imageHosts: string[]
 }

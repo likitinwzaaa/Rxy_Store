@@ -29,7 +29,6 @@ type Form = {
 
 type Errors = Partial<Record<'image' | 'label' | 'target' | 'end', string>>
 
-// แปลงแบนเนอร์เป็นค่าในฟอร์ม
 function toForm(b: Banner | null): Form {
   return {
     image: b?.image ?? '',
@@ -41,7 +40,6 @@ function toForm(b: Banner | null): Form {
   }
 }
 
-// ตรวจค่าในฟอร์มแบนเนอร์
 function validate(f: Form): Errors {
   const e: Errors = {}
   const img = f.image.trim()
@@ -55,7 +53,6 @@ function validate(f: Form): Errors {
   return e
 }
 
-// ข้อความช่วงเวลาที่โชว์
 function when(b: Banner) {
   if (b.startsAt && b.endsAt) return `${dateShort(b.startsAt)} – ${dateShort(b.endsAt)}`
   if (b.startsAt) return `เริ่ม ${dateShort(b.startsAt)}`
@@ -63,12 +60,10 @@ function when(b: Banner) {
   return 'ตลอด'
 }
 
-// ซ่อนรูปที่โหลดไม่ขึ้น
 function hideBroken(e: SyntheticEvent<HTMLImageElement>) {
   e.currentTarget.style.visibility = 'hidden'
 }
 
-// หน้าจัดการแบนเนอร์หน้าร้าน
 export function AdminBanners({ banners, seconds, products, categories, onChange, onSeconds, onSaved }: Props) {
   const [selected, setSelected] = useState<string | null>(banners[0]?.id ?? null)
   const [form, setForm] = useState<Form>(() => toForm(banners[0] ?? null))
