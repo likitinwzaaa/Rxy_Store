@@ -435,6 +435,7 @@
 
 .code-dialog {
   width: 460px;
+  overflow: visible;
 }
 
 .code-value {

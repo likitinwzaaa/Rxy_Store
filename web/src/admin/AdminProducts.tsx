@@ -3,6 +3,7 @@ import type { Category, Product } from '../types'
 import { baht } from '../lib/format'
 import { Toggle } from '../components/Toggle'
 import { Icon } from '../components/Icon'
+import { DateTimeField } from '../components/DateTimeField'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import {
   canExpire,
@@ -157,7 +158,12 @@ export function AdminProducts({ products, categories, onChange, onSaved }: Props
             )}
           </div>
 
-          <div className="chips">
+          <div
+            className="chips scroll"
+            onWheel={(e) => {
+              e.currentTarget.scrollLeft += e.deltaY
+            }}
+          >
             {[{ id: 'all', name: 'ทั้งหมด' }, ...categories].map((c) => (
               <button key={c.id} type="button" className={cat === c.id ? 'chip on' : 'chip'} onClick={() => setCat(c.id)}>
                 {c.name}
@@ -386,12 +392,12 @@ export function AdminProducts({ products, categories, onChange, onSaved }: Props
             </div>
             <div className="field-group">
               <label htmlFor="p-end">หมดเวลา</label>
-              <input
+              <DateTimeField
                 id="p-end"
-                type="datetime-local"
-                className="input mono"
                 value={form.saleEnds}
-                onChange={(e) => update({ saleEnds: e.target.value })}
+                align="right"
+                defaultTime="23:59"
+                onChange={(v) => update({ saleEnds: v })}
               />
             </div>
           </fieldset>

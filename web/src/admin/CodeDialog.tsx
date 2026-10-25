@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { DiscountCode } from '../types'
 import { Icon } from '../components/Icon'
+import { DateTimeField } from '../components/DateTimeField'
 import { fromLocalInput, toLocalInput } from '../lib/banner'
 
 type Props = {
@@ -57,7 +58,7 @@ export function CodeDialog({ code, taken, onSave, onDelete, onCancel }: Props) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return
+      if (e.key !== 'Escape' || document.querySelector('.dtp-pop')) return
       e.stopImmediatePropagation()
       onCancel()
     }
@@ -168,24 +169,19 @@ export function CodeDialog({ code, taken, onSave, onDelete, onCancel }: Props) {
             <label htmlFor="k-start">
               เริ่ม <span className="opt">ไม่บังคับ</span>
             </label>
-            <input
-              id="k-start"
-              type="datetime-local"
-              className="input mono"
-              value={form.start}
-              onChange={(e) => update({ start: e.target.value })}
-            />
+            <DateTimeField id="k-start" value={form.start} onChange={(v) => update({ start: v })} />
           </div>
           <div className="field-group">
             <label htmlFor="k-end">
               หมด <span className="opt">ไม่บังคับ</span>
             </label>
-            <input
+            <DateTimeField
               id="k-end"
-              type="datetime-local"
-              className={bad('end') + ' mono'}
               value={form.end}
-              onChange={(e) => update({ end: e.target.value })}
+              invalid={!!errors.end}
+              align="right"
+              defaultTime="23:59"
+              onChange={(v) => update({ end: v })}
             />
           </div>
         </div>

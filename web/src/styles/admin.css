@@ -3,6 +3,10 @@
 }
 
 .adm-name {
+  max-width: 280px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font-size: 18px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -81,7 +85,21 @@
   gap: 6px;
 }
 
+.chips.scroll {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent);
+}
+
+.chips.scroll::-webkit-scrollbar {
+  display: none;
+}
+
 .chip {
+  flex: none;
+  white-space: nowrap;
   height: 28px;
   padding: 0 12px;
   background: transparent;
@@ -103,7 +121,9 @@
 }
 
 .adm-add {
+  flex: none;
   margin-left: auto;
+  white-space: nowrap;
   font-weight: 600;
 }
 

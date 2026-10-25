@@ -54,6 +54,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 0 18px;
   font-size: 14px;
   font-weight: 700;
@@ -668,4 +669,11 @@
 
 .done-actions .btn {
   padding: 0 28px;
+}
+
+.qr-top > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }

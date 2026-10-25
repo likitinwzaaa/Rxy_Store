@@ -2,6 +2,7 @@ import { useState, type DragEvent, type SyntheticEvent } from 'react'
 import type { Banner, BannerLink, Category, Product } from '../types'
 import { Toggle } from '../components/Toggle'
 import { Icon } from '../components/Icon'
+import { DateTimeField } from '../components/DateTimeField'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { safeImage } from '../lib/product'
 import { dateShort } from '../lib/format'
@@ -323,24 +324,19 @@ export function AdminBanners({ banners, seconds, products, categories, onChange,
               <label htmlFor="b-start">
                 เริ่ม <span className="opt">ไม่บังคับ</span>
               </label>
-              <input
-                id="b-start"
-                type="datetime-local"
-                className="input mono"
-                value={form.start}
-                onChange={(e) => update({ start: e.target.value })}
-              />
+              <DateTimeField id="b-start" value={form.start} onChange={(v) => update({ start: v })} />
             </div>
             <div className="field-group">
               <label htmlFor="b-end">
                 จบ <span className="opt">ไม่บังคับ</span>
               </label>
-              <input
+              <DateTimeField
                 id="b-end"
-                type="datetime-local"
-                className={bad('end') + ' mono'}
                 value={form.end}
-                onChange={(e) => update({ end: e.target.value })}
+                invalid={!!errors.end}
+                align="right"
+                defaultTime="23:59"
+                onChange={(v) => update({ end: v })}
               />
             </div>
           </div>

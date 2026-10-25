@@ -22,7 +22,7 @@ export function CategoryNav({ items, active, onSelect }: Props) {
           aria-current={c.id === active ? 'page' : undefined}
           onClick={() => onSelect(c.id)}
         >
-          {c.name}
+          <span className="cat-name">{c.name}</span>
           <span className="mono">{c.count}</span>
         </button>
       ))}

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import { isBrowser } from './lib/nui'
 import { lockdown } from './lib/csp'
+import { fitScreen } from './lib/scale'
 
 import './styles/fonts.css'
 import './styles/base.css'
@@ -21,6 +22,8 @@ if (isBrowser) {
 } else {
   lockdown()
 }
+
+fitScreen()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

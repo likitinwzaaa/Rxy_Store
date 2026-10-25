@@ -68,6 +68,7 @@
 }
 
 .ulink {
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -284,4 +285,152 @@
 
 .back:hover svg {
   transform: translateX(-3px);
+}
+
+.dtp {
+  position: relative;
+}
+
+.dtp-field {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 0 10px;
+  color: var(--text);
+  font-size: 12px;
+  white-space: nowrap;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dtp-field svg {
+  flex: none;
+  color: var(--muted);
+}
+
+.dtp-field.focus {
+  border-color: var(--text);
+}
+
+.dtp-empty {
+  color: #6e6e77;
+}
+
+.dtp-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  z-index: 30;
+  width: 256px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: #151517;
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  animation: drop 0.2s ease-out both;
+}
+
+.dtp-pop.left {
+  left: 0;
+}
+
+.dtp-pop.right {
+  right: 0;
+}
+
+.dtp-pop.up {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+
+.dtp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.dtp-head button {
+  display: flex;
+  padding: 5px;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.dtp-head button:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.dtp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.dtp-wd {
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.dtp-day {
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.dtp-day:hover {
+  background: var(--hover);
+}
+
+.dtp-day.today {
+  border-color: var(--line-2);
+}
+
+.dtp-day.on {
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 700;
+}
+
+.dtp-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.dtp-time {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.dtp-time .input.tiny {
+  width: 36px;
+  margin-left: 2px;
+}
+
+.dtp-time .input.tiny + .input.tiny {
+  margin-left: 0;
 }
