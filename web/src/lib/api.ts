@@ -13,6 +13,7 @@ const messages: Record<string, string> = {
   conflict: 'มีคนแก้ไปก่อนแล้ว โหลดข้อมูลล่าสุดให้แล้ว',
   stock_changed: 'มีคนซื้อไประหว่างแก้ สต็อกเปลี่ยนแล้ว โหลดข้อมูลล่าสุดให้แล้ว',
   in_use: 'หมวดนี้ยังมีสินค้าอยู่ ย้ายสินค้าออกก่อน',
+  mismatch: 'ข้อมูลบัญชีไม่ตรง ติดต่อแอดมิน',
 }
 
 export function errorText(code: string) {

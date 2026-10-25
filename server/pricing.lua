@@ -77,6 +77,7 @@ end
 function Pricing.quote(src, payload)
     local player = Players.get(src)
     if not player then return nil, 'error' end
+    if player.mismatch then return nil, 'mismatch' end
 
     local lines = cleanLines(payload.lines)
     if not lines then return nil, 'bad' end

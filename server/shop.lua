@@ -1,6 +1,7 @@
 Requests.on('shop:open', { limit = 5, per = 10 }, function(src, payload)
     local player = Players.get(src)
     if not player then return nil, 'error' end
+    if player.mismatch then return nil, 'mismatch' end
 
     local visible, vis = Catalog.visible(src)
     local data = {
