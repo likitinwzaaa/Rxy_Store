@@ -242,6 +242,29 @@ local migrations = {
             ) ]] .. TABLE,
         },
     },
+    {
+        tables = { 'products', 'categories', 'banners', 'codes', 'tiers' },
+        columns = {
+            products = {
+                { 'featured', 'TINYINT(1) NOT NULL DEFAULT 0' },
+                { 'starts_at', 'DATETIME NULL' },
+                { 'rev', 'INT UNSIGNED NOT NULL DEFAULT 1' },
+            },
+            categories = {
+                { 'rev', 'INT UNSIGNED NOT NULL DEFAULT 1' },
+            },
+            banners = {
+                { 'rev', 'INT UNSIGNED NOT NULL DEFAULT 1' },
+            },
+            codes = {
+                { 'rev', 'INT UNSIGNED NOT NULL DEFAULT 1' },
+            },
+            tiers = {
+                { 'rev', 'INT UNSIGNED NOT NULL DEFAULT 1' },
+            },
+        },
+        sql = {},
+    },
 }
 
 -- พิมพ์ลง console พร้อมสี
@@ -301,6 +324,15 @@ local function cleanBackups()
     end
 end
 
+local function addColumn(name, column, definition)
+    local exists = MySQL.scalar.await(
+        'SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?',
+        { DB.t(name), column }
+    )
+    if tonumber(exists) and tonumber(exists) > 0 then return end
+    MySQL.query.await(('ALTER TABLE `%s` ADD COLUMN `%s` %s'):format(DB.t(name), column, definition))
+end
+
 -- รัน migration ที่ยังไม่ได้รันทีละเวอร์ชัน
 local function migrate()
     local from = currentVersion()
@@ -318,6 +350,11 @@ local function migrate()
         end
         for _, query in ipairs(m.sql) do
             MySQL.query.await(DB.sql(query))
+        end
+        for name, list in pairs(m.columns or {}) do
+            for _, col in ipairs(list) do
+                addColumn(name, col[1], col[2])
+            end
         end
         setMeta('db_version', v)
         if v == 1 then setMeta('installed_at', DB.now()) end
